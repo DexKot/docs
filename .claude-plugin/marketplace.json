@@ -1,0 +1,17 @@
+{
+  "name": "dexkot",
+  "owner": {
+    "name": "DexKot"
+  },
+  "description": "Skills for building Android and Kotlin Multiplatform apps with the DexKot mobile-core libraries",
+  "plugins": [
+    {
+      "name": "dexkot-mobile-core",
+      "source": "./plugins/dexkot-mobile-core",
+      "description": "How to use DexKot mobile-core: results and errors, data layer and transactions, ViewModels, screens, navigation, Koin DI, logging, background work, remote config and permissions",
+      "version": "0.27.0",
+      "category": "development",
+      "tags": ["kotlin", "android", "kmp", "compose", "koin"]
+    }
+  ]
+}

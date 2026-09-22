@@ -1,0 +1,5 @@
+{
+  "name": "dexkot-mobile-core",
+  "description": "How to use DexKot mobile-core: results and errors, data layer and transactions, ViewModels, screens, navigation, Koin DI, logging, background work, remote config and permissions",
+  "version": "0.27.0"
+}

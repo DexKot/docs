@@ -8,7 +8,7 @@ interface or class, KSP writes a decorator, and Koin hands out the decorated ins
 a use case. Code that really does need to log by hand (say, a caught exception in a data source) gets the
 logger from the coroutine context, so you never add a logger parameter to a constructor just for that.
 
-Version: **0.27.0**.
+Version: **0.28.0**.
 
 - [Modules](#modules)
 - [1. Compose your logger](#1-compose-your-logger)
@@ -49,10 +49,10 @@ dependencyResolutionManagement {
 
 // build.gradle.kts (app / composition module)
 dependencies {
-    implementation("dev.dexkot.mobile:core-logger:0.27.0")
-    implementation("dev.dexkot.mobile:core-logger-firebase:0.27.0")
-    implementation("dev.dexkot.mobile:core-logger-posthog:0.27.0")
-    implementation("dev.dexkot.mobile:core-logger-di-koin:0.27.0")
+    implementation("dev.dexkot.mobile:core-logger:0.28.0")
+    implementation("dev.dexkot.mobile:core-logger-firebase:0.28.0")
+    implementation("dev.dexkot.mobile:core-logger-posthog:0.28.0")
+    implementation("dev.dexkot.mobile:core-logger-di-koin:0.28.0")
 }
 ```
 
@@ -164,10 +164,10 @@ plugins {
 }
 
 dependencies {
-    implementation("dev.dexkot.mobile:core-annotation:0.27.0")
-    implementation("dev.dexkot.mobile:core-logger:0.27.0")
-    implementation("dev.dexkot.mobile:core-ui:0.27.0")         // for ViewModels / nav actions
-    ksp("dev.dexkot.mobile:core-ksp-processor:0.27.0")
+    implementation("dev.dexkot.mobile:core-annotation:0.28.0")
+    implementation("dev.dexkot.mobile:core-logger:0.28.0")
+    implementation("dev.dexkot.mobile:core-ui:0.28.0")         // for ViewModels / nav actions
+    ksp("dev.dexkot.mobile:core-ksp-processor:0.28.0")
 }
 ```
 
@@ -179,16 +179,16 @@ kotlin {
         commonMain {
             kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
             dependencies {
-                implementation("dev.dexkot.mobile:core-annotation:0.27.0")
-                implementation("dev.dexkot.mobile:core-logger:0.27.0")
-                implementation("dev.dexkot.mobile:core-foundation:0.27.0")
+                implementation("dev.dexkot.mobile:core-annotation:0.28.0")
+                implementation("dev.dexkot.mobile:core-logger:0.28.0")
+                implementation("dev.dexkot.mobile:core-foundation:0.28.0")
             }
         }
     }
 }
 
 dependencies {
-    add("kspCommonMainMetadata", "dev.dexkot.mobile:core-ksp-processor:0.27.0")
+    add("kspCommonMainMetadata", "dev.dexkot.mobile:core-ksp-processor:0.28.0")
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().configureEach {
@@ -196,8 +196,9 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().con
 }
 ```
 
-Keep `core-ui` and `core-ksp-processor` on the same version. The 0.27.0 ViewModel decorator calls
-`clearTogetherWith`, which was added to `AndroidViewModel` in core-ui 0.27.0.
+Keep `core-ui` and `core-ksp-processor` on the same version. Since 0.27.0 the ViewModel decorator calls
+`clearTogetherWith`, which was added to `AndroidViewModel` in core-ui 0.27.0. Since 0.28.0 the nav
+action decorator implements `INavActionLogDecorator.log`, which replaced `wrap` in core-ui 0.28.0.
 
 ## 4. Log use cases
 

@@ -1,4 +1,4 @@
-# core-database, core-database-sqldelight, core-preferences API reference (0.27.0)
+# core-database, core-database-sqldelight, core-preferences API reference (0.28.0)
 
 All three are Kotlin Multiplatform (Android: published; iOS: build from source).
 

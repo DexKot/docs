@@ -4,7 +4,7 @@
 JSON settings) without knowing which service serves them. Two backends ship with it: Firebase Remote
 Config and PostHog feature flag payloads. Both are KMP.
 
-Version: **0.27.0**.
+Version: **0.28.0**.
 
 - [Install](#install)
 - [How it is layered](#how-it-is-layered)
@@ -20,10 +20,10 @@ Version: **0.27.0**.
 
 ```kotlin
 // feature modules
-implementation("dev.dexkot.mobile:core-remoteconfig:0.27.0")
+implementation("dev.dexkot.mobile:core-remoteconfig:0.28.0")
 
 // app / composition root (pulls both backends)
-implementation("dev.dexkot.mobile:core-remoteconfig-di-koin:0.27.0")
+implementation("dev.dexkot.mobile:core-remoteconfig-di-koin:0.28.0")
 ```
 
 Add `maven("https://dexkot.github.io/maven")` to your repositories. Features that store JSON values also
@@ -152,7 +152,7 @@ to `true`.
 - **Missing keys after a sync** keep their previous value in flows; they don't reset to the default.
 - **`get<T>` on an empty value** returns `Failure(ErrorEntity.NoData)` (fixed in 0.27.0), so provider
   reads fall back to your default.
-- **`remoteConfigModule(dispatcher)`** does not change any behaviour in 0.27.0.
+- **`remoteConfigModule(dispatcher)`** does not change any behaviour in 0.28.0.
 - **Tests:** the real handlers start native SDKs. Fake `IRemoteConfigHandler` (maps plus
   `MutableStateFlow`s) and wrap it in `RemoteConfigProvider`.
 

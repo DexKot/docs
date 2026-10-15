@@ -1,4 +1,4 @@
-# DexKot Koin modules: exact bindings (0.27.0)
+# DexKot Koin modules: exact bindings (0.28.0)
 
 What each module registers, with scope and qualifier, and what it expects to find in the graph.
 
@@ -55,7 +55,7 @@ fun remoteConfigModule(dispatcher: CoroutineDispatcher = Dispatchers.Default): M
 
 | Definition | Scope | Parameters |
 |------------|-------|-----------|
-| internal `CoroutineScope(SupervisorJob() + dispatcher)` | single, internal qualifier | – (no binding in this module consumes it in 0.27.0, so `dispatcher` currently has no observable effect) |
+| internal `CoroutineScope(SupervisorJob() + dispatcher)` | single, internal qualifier | – (no binding in this module consumes it in 0.28.0, so `dispatcher` currently has no observable effect) |
 | `IRemoteConfigHandler` @ `firebaseRemoteConfig()` → `FirebaseRemoteConfigHandler(syncTimeOut, serializer)` | single | `Long` sync timeout in **ms**, `Json` |
 | `IRemoteConfigHandler` @ `postHogRemoteConfig()` → `PostHogRemoteConfigHandler(serializer)` | single | `Json` |
 | `IRemoteConfigProvider` → `RemoteConfigProvider(remoteConfigHandler = get())` | factory | – (uses the **unqualified** handler) |

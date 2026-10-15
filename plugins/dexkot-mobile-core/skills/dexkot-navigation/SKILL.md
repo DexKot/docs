@@ -14,7 +14,7 @@ The payoff: ViewModels are unit-testable without Android (assert the emitted act
 decisions (A/B tests, "has the user seen onboarding?") live in one injectable place, analytics for
 every navigation is generated, and internal and external deep links share a single routing path.
 
-Version covered: **0.27.0**. Android only (core-ui is an Android library).
+Version covered: **0.28.0**. Android only (core-ui is an Android library).
 API signatures: `references/api.md`. Longer recipes (host activity, results, activity results,
 query params, conditional routing, commons): `references/recipes.md`.
 
@@ -31,16 +31,16 @@ dependencyResolutionManagement {
 }
 // app/build.gradle.kts
 dependencies {
-    implementation("dev.dexkot.mobile:core-ui:0.27.0")
-    implementation("dev.dexkot.mobile:core-ui-di-koin:0.27.0")        // uiModule(): dispatcher + UI prefs
-    implementation("dev.dexkot.mobile:core-permission-di-koin:0.27.0") // permission prefs for the host
+    implementation("dev.dexkot.mobile:core-ui:0.28.0")
+    implementation("dev.dexkot.mobile:core-ui-di-koin:0.28.0")        // uiModule(): dispatcher + UI prefs
+    implementation("dev.dexkot.mobile:core-permission-di-koin:0.28.0") // permission prefs for the host
     // core-ui uses these internally with `implementation`, so your code needs them on its own classpath:
     implementation("androidx.navigation:navigation-compose:2.9.5")      // navArgument, navDeepLink, NavType
     implementation("androidx.fragment:fragment-ktx:1.8.7")              // FragmentActivity
     implementation("io.insert-koin:koin-androidx-compose:4.1.1")        // koinViewModel, koinInject
     // Optional: generated navigation analytics (see dexkot-logging)
-    implementation("dev.dexkot.mobile:core-annotation:0.27.0")
-    ksp("dev.dexkot.mobile:core-ksp-processor:0.27.0")
+    implementation("dev.dexkot.mobile:core-annotation:0.28.0")
+    ksp("dev.dexkot.mobile:core-ksp-processor:0.28.0")
 }
 ```
 

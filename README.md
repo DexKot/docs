@@ -8,7 +8,7 @@ background work, remote config and runtime permissions.
 This repository holds the **public documentation** and the **Claude Code skills** for the libraries.
 The artifacts are published to a public Maven repository.
 
-**Current version: `0.27.0`**
+**Current version: `0.28.0`**
 
 ## Install
 
@@ -24,8 +24,8 @@ dependencyResolutionManagement {
 
 // build.gradle.kts
 dependencies {
-    implementation("dev.dexkot.mobile:core-foundation:0.27.0")
-    implementation("dev.dexkot.mobile:core-ui:0.27.0")
+    implementation("dev.dexkot.mobile:core-foundation:0.28.0")
+    implementation("dev.dexkot.mobile:core-ui:0.28.0")
     // ...the modules you need, see below
 }
 ```

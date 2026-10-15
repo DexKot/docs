@@ -5,7 +5,7 @@ navigate**. They emit a small data object describing the user's intent; the fram
 navigation. This guide walks through the model, builds a screen destination end to end, and covers
 arguments, results, activity results, the root host and the pitfalls.
 
-Artifacts: `dev.dexkot.mobile:core-ui` and `core-ui-di-koin`, version 0.27.0. Android only.
+Artifacts: `dev.dexkot.mobile:core-ui` and `core-ui-di-koin`, version 0.28.0. Android only.
 
 - [Why it works this way](#why-it-works-this-way)
 - [Setup](#setup)
@@ -44,10 +44,10 @@ dependencyResolutionManagement {
 }
 // app/build.gradle.kts
 dependencies {
-    implementation("dev.dexkot.mobile:core-ui:0.27.0")
-    implementation("dev.dexkot.mobile:core-ui-di-koin:0.27.0")
-    implementation("dev.dexkot.mobile:core-permission-di-koin:0.27.0")
-    implementation("dev.dexkot.mobile:core-permission:0.27.0")
+    implementation("dev.dexkot.mobile:core-ui:0.28.0")
+    implementation("dev.dexkot.mobile:core-ui-di-koin:0.28.0")
+    implementation("dev.dexkot.mobile:core-permission-di-koin:0.28.0")
+    implementation("dev.dexkot.mobile:core-permission:0.28.0")
 
     // core-ui uses these with `implementation`; your Routes need them directly.
     implementation("androidx.navigation:navigation-compose:2.9.5")
@@ -55,8 +55,8 @@ dependencies {
     implementation("io.insert-koin:koin-androidx-compose:4.1.1")
 
     // Navigation analytics (optional)
-    implementation("dev.dexkot.mobile:core-annotation:0.27.0")
-    ksp("dev.dexkot.mobile:core-ksp-processor:0.27.0")
+    implementation("dev.dexkot.mobile:core-annotation:0.28.0")
+    ksp("dev.dexkot.mobile:core-ksp-processor:0.28.0")
 }
 ```
 

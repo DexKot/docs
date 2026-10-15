@@ -15,7 +15,7 @@ logger has to be threaded through constructors.
 Everything funnels into a single `ILogger`, which is usually a composition of several backends
 (console + Firebase + PostHog) wrapped in `PersistentUserIdLogger`.
 
-Version covered: **0.27.0**. Detailed API: `references/logger-api.md`. AutoLog details and generated
+Version covered: **0.28.0**. Detailed API: `references/logger-api.md`. AutoLog details and generated
 code: `references/autolog.md`.
 
 ## Setup
@@ -32,10 +32,10 @@ dependencyResolutionManagement {
 
 // build.gradle.kts of the module that composes the logger (usually the app / shared DI module)
 dependencies {
-    implementation("dev.dexkot.mobile:core-logger:0.27.0")
-    implementation("dev.dexkot.mobile:core-logger-firebase:0.27.0")   // optional backend
-    implementation("dev.dexkot.mobile:core-logger-posthog:0.27.0")    // optional backend
-    implementation("dev.dexkot.mobile:core-logger-di-koin:0.27.0")    // loggerModule()
+    implementation("dev.dexkot.mobile:core-logger:0.28.0")
+    implementation("dev.dexkot.mobile:core-logger-firebase:0.28.0")   // optional backend
+    implementation("dev.dexkot.mobile:core-logger-posthog:0.28.0")    // optional backend
+    implementation("dev.dexkot.mobile:core-logger-di-koin:0.28.0")    // loggerModule()
 }
 ```
 
@@ -153,8 +153,8 @@ Add KSP to every module that declares annotated types:
 // Android module
 plugins { id("com.google.devtools.ksp") }
 dependencies {
-    implementation("dev.dexkot.mobile:core-annotation:0.27.0")
-    ksp("dev.dexkot.mobile:core-ksp-processor:0.27.0")
+    implementation("dev.dexkot.mobile:core-annotation:0.28.0")
+    ksp("dev.dexkot.mobile:core-ksp-processor:0.28.0")
 }
 ```
 
@@ -214,7 +214,7 @@ val notesUiModule = module {
 Bind the ViewModel as `AndroidViewModel<Model, Intention>`, not as `NotesViewModel`: the decorator is a
 different class. The decorator logs each annotated intention as a UI `intention` event, then forwards it;
 it also installs a `LoggerContextElement(sourceComponent)` in the wrapped ViewModel's `viewModelScope`, so
-use cases called from that ViewModel log under the screen's name. In 0.27.0 its `init` also calls
+use cases called from that ViewModel log under the screen's name. Since 0.27.0 its `init` also calls
 `clearTogetherWith(delegate)`, so the wrapped ViewModel's scope is cancelled and `onCleared` runs when the
 decorator is cleared.
 
@@ -281,8 +281,9 @@ See **dexkot-screen** for the screen structure.
 7. **`@AutoLogViewModel` needs `AndroidViewModel` as a direct supertype** and a `sealed` Intention in the
    same package, with its subclasses nested inside it. Annotate every intention subclass: the generated
    `when` has no `else` branch. Keep annotated nav actions top-level classes.
-8. **core-ui and core-ksp-processor must be on the same version**: 0.27.0 decorators call
-   `clearTogetherWith`, which older core-ui versions lack.
+8. **core-ui and core-ksp-processor must be on the same version**: since 0.27.0 ViewModel decorators
+   call `clearTogetherWith`, which older core-ui versions lack, and since 0.28.0 nav action decorators
+   implement `log(action, logger)` instead of the removed `wrap(executor, ...)`.
 9. **Only exact nav action classes are logged**: lookup is by `action::class`, so subclasses are skipped.
 10. **All logged params are strings**: `LogParam` values go through `toString()`.
 11. **PostHog captures an `OperationEvent` only when `isBusinessEvent` and `Success`**; other events are

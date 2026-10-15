@@ -1,4 +1,4 @@
-# core-ui navigation API (0.27.0)
+# core-ui navigation API (0.28.0)
 
 Exact public signatures, grouped by package. Default values are the library's.
 

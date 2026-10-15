@@ -52,10 +52,10 @@ plugins {
 }
 
 dependencies {
-    implementation("dev.dexkot.mobile:core-ui:0.27.0")
-    implementation("dev.dexkot.mobile:core-ui-di-koin:0.27.0")        // uiModule()
-    implementation("dev.dexkot.mobile:core-annotation:0.27.0")
-    ksp("dev.dexkot.mobile:core-ksp-processor:0.27.0")
+    implementation("dev.dexkot.mobile:core-ui:0.28.0")
+    implementation("dev.dexkot.mobile:core-ui-di-koin:0.28.0")        // uiModule()
+    implementation("dev.dexkot.mobile:core-annotation:0.28.0")
+    ksp("dev.dexkot.mobile:core-ksp-processor:0.28.0")
 
     // core-ui depends on these as implementation dependencies; declare them yourself
     implementation(platform("androidx.compose:compose-bom:2025.10.01"))

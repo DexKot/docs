@@ -5,7 +5,7 @@ small `-di-koin` artifact with a ready-made module, and your app composes the on
 explains that split, what each module provides, what your app still has to bind, and the conventions
 that keep a large Koin graph manageable.
 
-Version 0.27.0, Koin 4.1.1.
+Version 0.28.0, Koin 4.1.1.
 
 - [The philosophy](#the-philosophy)
 - [Setup](#setup)
@@ -40,14 +40,14 @@ dependencyResolutionManagement {
 }
 // app/build.gradle.kts
 dependencies {
-    implementation("dev.dexkot.mobile:core-logger-di-koin:0.27.0")
-    implementation("dev.dexkot.mobile:core-remoteconfig-di-koin:0.27.0")
-    implementation("dev.dexkot.mobile:core-work-di-koin:0.27.0")
-    implementation("dev.dexkot.mobile:core-permission-di-koin:0.27.0")
-    implementation("dev.dexkot.mobile:core-permission:0.27.0")   // not exposed by the -di-koin artifact
-    implementation("dev.dexkot.mobile:core-ui-di-koin:0.27.0")
-    implementation("dev.dexkot.mobile:core-ui:0.27.0")           // not exposed by the -di-koin artifact
-    implementation("dev.dexkot.mobile:core-preferences:0.27.0")
+    implementation("dev.dexkot.mobile:core-logger-di-koin:0.28.0")
+    implementation("dev.dexkot.mobile:core-remoteconfig-di-koin:0.28.0")
+    implementation("dev.dexkot.mobile:core-work-di-koin:0.28.0")
+    implementation("dev.dexkot.mobile:core-permission-di-koin:0.28.0")
+    implementation("dev.dexkot.mobile:core-permission:0.28.0")   // not exposed by the -di-koin artifact
+    implementation("dev.dexkot.mobile:core-ui-di-koin:0.28.0")
+    implementation("dev.dexkot.mobile:core-ui:0.28.0")           // not exposed by the -di-koin artifact
+    implementation("dev.dexkot.mobile:core-preferences:0.28.0")
 
     implementation("io.insert-koin:koin-android:4.1.1")
     implementation("io.insert-koin:koin-androidx-compose:4.1.1")
@@ -72,7 +72,7 @@ It does **not** register `ILogger`; you compose it.
 Registers `FirebaseRemoteConfigHandler` under `firebaseRemoteConfig()` and `PostHogRemoteConfigHandler`
 under `postHogRemoteConfig()` (both singles, created with parameters) and `IRemoteConfigProvider`
 (factory) that uses the **unqualified** `IRemoteConfigHandler`, which you bind. The `dispatcher`
-parameter configures an internal scope that no binding uses in 0.27.0; you can leave the default.
+parameter configures an internal scope that no binding uses in 0.28.0; you can leave the default.
 
 ### `workManagerWorkModule` / `coroutineWorkModule` / `workFactoriesModule`
 

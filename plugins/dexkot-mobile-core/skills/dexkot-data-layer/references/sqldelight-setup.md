@@ -33,7 +33,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation("dev.dexkot.mobile:core-database-sqldelight:0.27.0")
+            implementation("dev.dexkot.mobile:core-database-sqldelight:0.28.0")
             implementation("app.cash.sqldelight:runtime:2.2.1")
             implementation("app.cash.sqldelight:async-extensions:2.2.1")    // awaitAsList(), synchronous()
             implementation("app.cash.sqldelight:coroutines-extensions:2.2.1") // asFlow(), mapToList() (optional)

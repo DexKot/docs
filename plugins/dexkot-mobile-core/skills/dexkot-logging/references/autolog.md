@@ -1,4 +1,4 @@
-# AutoLog reference: annotations, KSP setup, generated code (0.27.0)
+# AutoLog reference: annotations, KSP setup, generated code (0.28.0)
 
 Contents
 1. Annotations
@@ -52,10 +52,10 @@ plugins {
 }
 
 dependencies {
-    implementation("dev.dexkot.mobile:core-annotation:0.27.0")
-    implementation("dev.dexkot.mobile:core-logger:0.27.0")
-    implementation("dev.dexkot.mobile:core-ui:0.27.0")        // if the module has ViewModels / nav actions
-    ksp("dev.dexkot.mobile:core-ksp-processor:0.27.0")
+    implementation("dev.dexkot.mobile:core-annotation:0.28.0")
+    implementation("dev.dexkot.mobile:core-logger:0.28.0")
+    implementation("dev.dexkot.mobile:core-ui:0.28.0")        // if the module has ViewModels / nav actions
+    ksp("dev.dexkot.mobile:core-ksp-processor:0.28.0")
 }
 ```
 
@@ -74,16 +74,16 @@ kotlin {
         commonMain {
             kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
             dependencies {
-                implementation("dev.dexkot.mobile:core-annotation:0.27.0")
-                implementation("dev.dexkot.mobile:core-logger:0.27.0")
-                implementation("dev.dexkot.mobile:core-foundation:0.27.0")
+                implementation("dev.dexkot.mobile:core-annotation:0.28.0")
+                implementation("dev.dexkot.mobile:core-logger:0.28.0")
+                implementation("dev.dexkot.mobile:core-foundation:0.28.0")
             }
         }
     }
 }
 
 dependencies {
-    add("kspCommonMainMetadata", "dev.dexkot.mobile:core-ksp-processor:0.27.0")
+    add("kspCommonMainMetadata", "dev.dexkot.mobile:core-ksp-processor:0.28.0")
 }
 
 // Every compilation must see the generated sources.
@@ -175,8 +175,10 @@ Requirements:
 - Declare the Intention in the **same package** as the ViewModel, and its subclasses **nested inside** it
   (`sealed interface NotesIntention { data object Back : NotesIntention }`). The generated file refers to
   the Intention by simple name without an import, and to each subclass as `NotesIntention.<Subclass>`.
-- The module needs `core-ui` and `core-logger` at the same version as the processor. The 0.27.0 decorator
-  calls `AndroidViewModel.clearTogetherWith`, which older core-ui versions do not have.
+- The module needs `core-ui` and `core-logger` at the same version as the processor. Since 0.27.0 the
+  ViewModel decorator calls `AndroidViewModel.clearTogetherWith`, which older core-ui versions do not
+  have; since 0.28.0 the nav action decorator implements `INavActionLogDecorator.log`, which older
+  core-ui versions do not have.
 
 Generated `NotesViewModel_LogDecorator.kt` (shape):
 
@@ -252,14 +254,9 @@ Generated `OpenNoteNavAction_LogDecorator.kt` (public class, no `withLogging`):
 ```kotlin
 class OpenNoteNavAction_LogDecorator : INavActionLogDecorator {
     override val actionType: KClass<out INavAction> = OpenNoteNavAction::class
-    override fun wrap(executor: INavActionExecutor, action: INavAction, logger: ILoggerInteractor): INavActionExecutor {
+    override fun log(action: INavAction, logger: ILoggerInteractor) {
         val typedAction = action as OpenNoteNavAction
-        return object : INavActionExecutor {
-            override fun invoke(navigator: INavigator) {
-                logger.navigate(navigationId = "open_note", params = mapOf("note_id" to typedAction.noteId.toString()))
-                executor(navigator)
-            }
-        }
+        logger.navigate(navigationId = "open_note", params = mapOf("note_id" to typedAction.noteId.toString()))
     }
 }
 ```
@@ -300,3 +297,4 @@ Each screen wraps the dispatcher with `dispatcher.withLogging(LocalLogger.curren
 | Blank nav action `identifier` | KSP error |
 | Forgot `.withLogging()` / decorator binding | compiles, logs nothing |
 | core-ui older than core-ksp-processor 0.27.0 | `clearTogetherWith` unresolved in generated code |
+| core-ui older than core-ksp-processor 0.28.0 | nav `_LogDecorator` overrides nothing (`log` not in `INavActionLogDecorator`) |

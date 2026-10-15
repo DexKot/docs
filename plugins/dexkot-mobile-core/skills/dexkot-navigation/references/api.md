@@ -1,4 +1,4 @@
-# core-ui navigation API (0.27.0)
+# core-ui navigation API (0.28.0)
 
 Exact public signatures, grouped by package. Default values are the library's.
 
@@ -19,44 +19,40 @@ package dev.dexkot.mobile.core.ui.navigation.action
 
 interface INavAction                                   // marker; implement it directly
 
-interface INavActionFactory<T : INavAction> {
+interface INavActionHandler<T : INavAction> {
     val actionType: KClass<T>                          // matched against action::class (exact)
-    fun resolve(action: T): INavActionExecutor
+    fun handle(action: T, navigator: INavigator)       // one shared instance: keep no per-navigation state
 }
 
 interface INavActionDispatcher {
-    fun dispatch(action: INavAction): INavActionExecutor
+    fun dispatch(action: INavAction, navigator: INavigator)
 }
 
-class NavActionDispatcher(factories: List<INavActionFactory<*>>) : INavActionDispatcher
-// dispatch() throws IllegalStateException("No INavActionFactory registered for <fqcn>") if no factory matches.
-// Built with associateBy { it.actionType }: duplicate actionType → last factory wins.
+class NavActionDispatcher(handlers: List<INavActionHandler<*>>) : INavActionDispatcher
+// dispatch() throws IllegalStateException("No INavActionHandler registered for <fqcn>") if no handler matches.
+// Built with associateBy { it.actionType }: duplicate actionType → last handler wins.
 
 interface INavActionLogDecorator {
     val actionType: KClass<out INavAction>
-    fun wrap(executor: INavActionExecutor, action: INavAction, logger: ILoggerInteractor): INavActionExecutor
+    fun log(action: INavAction, logger: ILoggerInteractor)
 }
 
 fun INavActionDispatcher.withLogging(
     logger: ILoggerInteractor,                          // dev.dexkot.mobile.core.logger.interactors.ui
     decorators: List<INavActionLogDecorator>,
 ): INavActionDispatcher
-// Returns a dispatcher that wraps the resolved executor with the decorator for action::class, if any.
+// Returns a dispatcher that calls the decorator for action::class (if any), then delegates the navigation.
 ```
 
 `@AutoLogNavAction(identifier: String, params: Array<LogParam> = [])` (package
 `dev.dexkot.mobile.core.annotation`) makes KSP generate `<ActionName>_LogDecorator` (public class,
-same package). Its wrapped executor calls `logger.navigate(navigationId = identifier, params = ...)`
-and then the real executor. See dexkot-logging.
+same package). Its `log` calls `logger.navigate(navigationId = identifier, params = ...)`; the logging
+dispatcher runs it before the handler. See dexkot-logging.
 
 ## navigator
 
 ```kotlin
 package dev.dexkot.mobile.core.ui.navigation.navigator
-
-interface INavActionExecutor {
-    operator fun invoke(navigator: INavigator)
-}
 
 interface INavigator {
     companion object { const val RESULT_KEY = "result" }
@@ -191,7 +187,7 @@ fun NavigationSubscriber(
 // ON_RESUME → LocalLogger.current.enter(); viewModel.onResume(consumed result)
 // ON_PAUSE  → LocalLogger.current.exit()
 // ON_STOP   → viewModel.onStop()
-// viewModel.nav event → dispatcher.dispatch(action)(navigator)
+// viewModel.nav event → dispatcher.dispatch(action, navigator)
 ```
 
 ## transitions
@@ -238,7 +234,7 @@ abstract class AndroidViewModel<Model, Intention> : IScreenViewModel<Model, Inte
 ```kotlin
 // dev.dexkot.mobile.core.ui.di.koin (core-ui-di-koin)
 fun uiModule(preferencesName: String = "dev.dexkot.ui.preferences"): Module
-//   single<INavActionDispatcher> { NavActionDispatcher(factories = getAll<INavActionFactory<*>>()) }
+//   single<INavActionDispatcher> { NavActionDispatcher(handlers = getAll<INavActionHandler<*>>()) }
 //   single<IUiPreferences> { UiPreferences(SharedPreferences named preferencesName) }
 //   factory<IResourceProvider> { ResourceProvider(context = get()) }
 

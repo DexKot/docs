@@ -1,4 +1,4 @@
-# core-permission reference (0.27.0, Android only)
+# core-permission reference (0.28.0, Android only)
 
 Contents
 1. Model
@@ -236,4 +236,4 @@ core-ui's screens wrap the controller with `withLogging(LocalLogger.current)`. E
    every user looks like a first-time user again.
 6. **Pending requests do not survive Activity recreation.** Launchers are re-registered, but the callback
    you passed is gone; rely on `rememberPermissionState` (refreshed on resume) for the final state.
-7. **Android only.** There is no iOS counterpart in 0.27.0.
+7. **Android only.** There is no iOS counterpart in 0.28.0.

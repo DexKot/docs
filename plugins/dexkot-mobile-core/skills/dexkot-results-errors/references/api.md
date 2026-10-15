@@ -1,6 +1,6 @@
-# core-foundation API reference (0.27.0)
+# core-foundation API reference (0.28.0)
 
-Artifact: `dev.dexkot.mobile:core-foundation:0.27.0` (KMP: Android published; iOS build from source).
+Artifact: `dev.dexkot.mobile:core-foundation:0.28.0` (KMP: Android published; iOS build from source).
 Every declaration below is the complete public surface of the module.
 
 ## Contents

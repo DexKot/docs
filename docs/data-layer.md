@@ -61,9 +61,9 @@ dependencyResolutionManagement {
 
 | Artifact | Contains | Add it to |
 |---|---|---|
-| `dev.dexkot.mobile:core-database:0.27.0` | `ITransactionFactory`, `ITransaction` | domain and data code |
-| `dev.dexkot.mobile:core-database-sqldelight:0.27.0` | `TransactionFactory` for SQLDelight | only the module that builds the database |
-| `dev.dexkot.mobile:core-preferences:0.27.0` | `settingsFactoryModule` (Koin) | modules with key-value stores |
+| `dev.dexkot.mobile:core-database:0.28.0` | `ITransactionFactory`, `ITransaction` | domain and data code |
+| `dev.dexkot.mobile:core-database-sqldelight:0.28.0` | `TransactionFactory` for SQLDelight | only the module that builds the database |
+| `dev.dexkot.mobile:core-preferences:0.28.0` | `settingsFactoryModule` (Koin) | modules with key-value stores |
 
 All are Kotlin Multiplatform. Android: published. iOS: build from source (`publishToMavenLocal`).
 `core-database` brings `core-foundation`; `core-preferences` brings `com.russhwolf:multiplatform-settings`
@@ -100,7 +100,7 @@ kotlin {
     }
     sourceSets {
         commonMain.dependencies {
-            implementation("dev.dexkot.mobile:core-database-sqldelight:0.27.0")
+            implementation("dev.dexkot.mobile:core-database-sqldelight:0.28.0")
             implementation("app.cash.sqldelight:runtime:2.2.1")
             implementation("app.cash.sqldelight:async-extensions:2.2.1")
             implementation("app.cash.sqldelight:coroutines-extensions:2.2.1")  // optional: Flow queries

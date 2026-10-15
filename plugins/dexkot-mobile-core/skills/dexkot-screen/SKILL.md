@@ -43,7 +43,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.parcelize")
 }
 dependencies {
-    implementation("dev.dexkot.mobile:core-ui:0.27.0")
+    implementation("dev.dexkot.mobile:core-ui:0.28.0")
     // core-ui uses these as implementation dependencies; declare them yourself:
     implementation(platform("androidx.compose:compose-bom:2025.10.01"))
     implementation("androidx.compose.runtime:runtime")

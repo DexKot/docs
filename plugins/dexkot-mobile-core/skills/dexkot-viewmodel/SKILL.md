@@ -31,9 +31,9 @@ plugins {
     id("com.google.devtools.ksp")            // only for @AutoLogViewModel
 }
 dependencies {
-    implementation("dev.dexkot.mobile:core-ui:0.27.0")         // brings core-foundation (ResultOf, ErrorEntity)
-    implementation("dev.dexkot.mobile:core-annotation:0.27.0") // @AutoLogViewModel, @AutoLogIntention
-    ksp("dev.dexkot.mobile:core-ksp-processor:0.27.0")
+    implementation("dev.dexkot.mobile:core-ui:0.28.0")         // brings core-foundation (ResultOf, ErrorEntity)
+    implementation("dev.dexkot.mobile:core-annotation:0.28.0") // @AutoLogViewModel, @AutoLogIntention
+    ksp("dev.dexkot.mobile:core-ksp-processor:0.28.0")
     // core-ui uses these as implementation dependencies; declare them yourself:
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0")
     implementation("androidx.navigation:navigation-compose:2.9.5")
@@ -403,7 +403,7 @@ the ViewModel's package. The decorator logs each annotated intention before forw
 - `references/api.md` — every public signature in the viewmodel package, `Resource` semantics per
   method, `Event`, `Empty`, custom decorators, unit-testing a ViewModel.
 - `dexkot-screen` — ScreenState, `ModelUpdates`, the Screen composable, composition locals.
-- `dexkot-navigation` — `Route`, `INavAction`, factories/executors, passing args and results.
+- `dexkot-navigation` — `Route`, `INavAction` and its handler, passing args and results.
 - `dexkot-results-errors` — `ResultOf`, `ErrorEntity`.
 - `dexkot-di-koin` — `uiModule()`, ViewModel registration, qualifiers.
 - `dexkot-logging` — `@AutoLogViewModel`, `@AutoLogIntention`, `LogParam`, KSP.

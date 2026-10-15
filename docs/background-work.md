@@ -11,7 +11,7 @@ feature writes an **executor** (what to do), a **config** (when it may run), and
 
 Feature code is identical for both, so it can live in `commonMain`.
 
-Version: **0.27.0**.
+Version: **0.28.0**.
 
 - [Install](#install)
 - [1. Write an executor](#1-write-an-executor)
@@ -28,12 +28,12 @@ Version: **0.27.0**.
 
 ```kotlin
 // feature modules (commonMain)
-implementation("dev.dexkot.mobile:core-work:0.27.0")
+implementation("dev.dexkot.mobile:core-work:0.28.0")
 
 // app / composition root
-implementation("dev.dexkot.mobile:core-work-di-koin:0.27.0")
+implementation("dev.dexkot.mobile:core-work-di-koin:0.28.0")
 // Android + WorkManager backend:
-implementation("dev.dexkot.mobile:core-permission-di-koin:0.27.0")
+implementation("dev.dexkot.mobile:core-permission-di-koin:0.28.0")
 implementation("androidx.work:work-runtime-ktx:2.11.1")
 implementation("io.insert-koin:koin-androidx-workmanager:4.1.1")
 ```

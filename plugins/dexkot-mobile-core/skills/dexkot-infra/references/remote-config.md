@@ -1,4 +1,4 @@
-# core-remoteconfig reference (0.27.0)
+# core-remoteconfig reference (0.28.0)
 
 Contents
 1. Layers: handler and provider
@@ -221,7 +221,7 @@ The real handlers start native SDKs in their constructors. In unit tests, implem
    returns the first instance.
 3. **Flows are cached by key.** The first `defaultValue` requested for a key is the one used. After a sync,
    a key that disappeared keeps its last value instead of resetting to the default.
-4. **`remoteConfigModule(dispatcher)` has no visible effect in 0.27.0**: the dispatcher builds an internal
+4. **`remoteConfigModule(dispatcher)` has no visible effect in 0.28.0**: the dispatcher builds an internal
    scope that the handlers do not use.
 5. **PostHog booleans need a payload** (section 6).
 6. **Firebase SDK defaults are ignored** (section 5).

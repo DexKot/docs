@@ -5,7 +5,7 @@ navigate**. They emit a small data object describing the user's intent; the fram
 navigation. This guide walks through the model, builds a screen destination end to end, and covers
 arguments, results, activity results, the root host and the pitfalls.
 
-Artifacts: `dev.dexkot.mobile:core-ui` and `core-ui-di-koin`, version 0.27.0. Android only.
+Artifacts: `dev.dexkot.mobile:core-ui` and `core-ui-di-koin`, version 0.28.0. Android only.
 
 - [Why it works this way](#why-it-works-this-way)
 - [Setup](#setup)
@@ -44,10 +44,10 @@ dependencyResolutionManagement {
 }
 // app/build.gradle.kts
 dependencies {
-    implementation("dev.dexkot.mobile:core-ui:0.27.0")
-    implementation("dev.dexkot.mobile:core-ui-di-koin:0.27.0")
-    implementation("dev.dexkot.mobile:core-permission-di-koin:0.27.0")
-    implementation("dev.dexkot.mobile:core-permission:0.27.0")
+    implementation("dev.dexkot.mobile:core-ui:0.28.0")
+    implementation("dev.dexkot.mobile:core-ui-di-koin:0.28.0")
+    implementation("dev.dexkot.mobile:core-permission-di-koin:0.28.0")
+    implementation("dev.dexkot.mobile:core-permission:0.28.0")
 
     // core-ui uses these with `implementation`; your Routes need them directly.
     implementation("androidx.navigation:navigation-compose:2.9.5")
@@ -55,8 +55,8 @@ dependencies {
     implementation("io.insert-koin:koin-androidx-compose:4.1.1")
 
     // Navigation analytics (optional)
-    implementation("dev.dexkot.mobile:core-annotation:0.27.0")
-    ksp("dev.dexkot.mobile:core-ksp-processor:0.27.0")
+    implementation("dev.dexkot.mobile:core-annotation:0.28.0")
+    ksp("dev.dexkot.mobile:core-ksp-processor:0.28.0")
 }
 ```
 
@@ -66,11 +66,11 @@ dependencies {
 ViewModel ── emit(NoteDetailNavAction(42)) ──▶ viewModel.nav (StateFlow<Event<INavAction>?>)
                                                    │
 NavigationSubscriber (added to every screen) ◀─────┘
-   │ dispatcher.dispatch(action)            ← dispatcher wrapped with log decorators per screen
+   │ dispatcher.dispatch(action, navigator) ← dispatcher wrapped with log decorators per screen
    ▼
-NavActionDispatcher ── finds INavActionFactory by action::class ──▶ factory.resolve(action)
+LoggingNavActionDispatcher ── logs via the _LogDecorator for action::class, if any
    ▼
-INavActionExecutor.invoke(navigator)
+NavActionDispatcher ── finds INavActionHandler by action::class ──▶ handler.handle(action, navigator)
    ▼
 navigator.goNoteDetail(42)  →  navigate("notes/42")  →  NavController.navigate("<scheme>://notes/42")
 ```
@@ -84,7 +84,7 @@ A screen's navigation code lives in its `route/` folder:
 
 ```
 notes/detail/
-├── route/      NoteDetailRoute, NoteDetailNavAction, NoteDetailNavActionFactory, NoteDetailNavActionExecutor
+├── route/      NoteDetailRoute, NoteDetailNavAction, NoteDetailNavActionHandler
 ├── di/         NoteDetailModule
 ├── viewmodel/  NoteDetailViewModel, NoteDetailModel, NoteDetailIntention
 └── screen/     NoteDetailScreen
@@ -150,40 +150,36 @@ Things to notice:
 - Built-in transitions: `DefaultTransitions` (fade), `ImitationOfActivities` (horizontal slide),
   `ModalTransition` (slide up). Or build your own `Transitions(...)`.
 
-### Step 2: the NavAction triple
+### Step 2: the NavAction and its handler
 
 ```kotlin
 import dev.dexkot.mobile.core.annotation.AutoLogNavAction
 import dev.dexkot.mobile.core.annotation.LogParam
 import dev.dexkot.mobile.core.ui.navigation.action.INavAction
-import dev.dexkot.mobile.core.ui.navigation.action.INavActionFactory
-import dev.dexkot.mobile.core.ui.navigation.navigator.INavActionExecutor
+import dev.dexkot.mobile.core.ui.navigation.action.INavActionHandler
 import dev.dexkot.mobile.core.ui.navigation.navigator.INavigator
 import com.example.notes.navigation.notes.detail.route.NoteDetailRoute.goNoteDetail
 
 @AutoLogNavAction(identifier = "go_note_detail", params = [LogParam(logName = "note_id", paramName = "noteId")])
 data class NoteDetailNavAction(val noteId: Long) : INavAction
 
-internal class NoteDetailNavActionFactory : INavActionFactory<NoteDetailNavAction> {
+internal class NoteDetailNavActionHandler : INavActionHandler<NoteDetailNavAction> {
     override val actionType = NoteDetailNavAction::class
-    override fun resolve(action: NoteDetailNavAction): INavActionExecutor = NoteDetailNavActionExecutor(action)
-}
-
-internal class NoteDetailNavActionExecutor(private val action: NoteDetailNavAction) : INavActionExecutor {
-    override operator fun invoke(navigator: INavigator) {
+    override fun handle(action: NoteDetailNavAction, navigator: INavigator) {
         navigator.goNoteDetail(noteId = action.noteId)
     }
 }
 ```
 
-The **action** is what the ViewModel knows. The **factory** is created by Koin, so it can receive
-extra dependencies and pass them on. The **executor** is the only code that touches `INavigator`.
+The **action** is what the ViewModel knows. The **handler** is created by Koin, so it can receive
+extra dependencies through its constructor, and it is the only code that touches `INavigator`. The
+dispatcher keeps one handler instance for the app's lifetime: don't store per-navigation state in it.
 
 ### Step 3: register in Koin
 
 ```kotlin
 val NoteDetailModule = module {
-    factory { NoteDetailNavActionFactory() } binds arrayOf(INavActionFactory::class)
+    factory { NoteDetailNavActionHandler() } binds arrayOf(INavActionHandler::class)
     factory { NoteDetailNavAction_LogDecorator() } binds arrayOf(INavActionLogDecorator::class)
 
     viewModel<AndroidViewModel<NoteDetailModel, NoteDetailIntention>>(noteDetailViewModel()) { parameters ->
@@ -195,7 +191,7 @@ val NoteDetailModule = module {
 internal fun noteDetailViewModel() = named("note_detail_viewmodel")
 ```
 
-`uiModule()` builds the dispatcher from every factory bound as `INavActionFactory`. The
+`uiModule()` builds the dispatcher from every handler bound as `INavActionHandler`. The
 `_LogDecorator` and `withLogging` are generated by the AutoLog annotations; see the logging guide. More
 on modules in the [dependency injection guide](dependency-injection.md).
 
@@ -287,15 +283,16 @@ override fun onResume(result: Bundle?) {
 ```
 
 `BackNavAction` is a shared action you define once (see [Shared actions](#shared-actions)); its
-executor calls `navigator.popBackStack(result)`. `onResume` runs on every resume, usually with `null`.
+handler calls `navigator.popBackStack(result)`. `onResume` runs on every resume, usually with `null`.
 If there is nothing to pop, `popBackStack` sets `RESULT_OK` (with the result as extras) and finishes
 the Activity.
 
 ## Launching other apps for a result
 
 ```kotlin
-internal class PickAttachmentNavActionExecutor(private val action: PickAttachmentNavAction) : INavActionExecutor {
-    override operator fun invoke(navigator: INavigator) {
+internal class PickAttachmentNavActionHandler : INavActionHandler<PickAttachmentNavAction> {
+    override val actionType = PickAttachmentNavAction::class
+    override fun handle(action: PickAttachmentNavAction, navigator: INavigator) {
         navigator.navigateForResult(ActivityResultContracts.OpenDocument()) { _, launch ->
             launch(action.mimeTypes.toTypedArray())
         }
@@ -390,15 +387,17 @@ Actions many screens emit are defined once under `navigation/commons/` and regis
 @AutoLogNavAction(identifier = "back")
 data class BackNavAction(val result: Bundle? = null) : INavAction
 
-internal class BackNavActionExecutor(private val action: BackNavAction) : INavActionExecutor {
-    override operator fun invoke(navigator: INavigator) = navigator.popBackStack(result = action.result)
+internal class BackNavActionHandler : INavActionHandler<BackNavAction> {
+    override val actionType = BackNavAction::class
+    override fun handle(action: BackNavAction, navigator: INavigator) = navigator.popBackStack(result = action.result)
 }
 
 @AutoLogNavAction(identifier = "open_url")
 data class OpenUrlNavAction(val uri: Uri) : INavAction
 
-internal class OpenUrlNavActionExecutor(private val action: OpenUrlNavAction) : INavActionExecutor {
-    override operator fun invoke(navigator: INavigator) {
+internal class OpenUrlNavActionHandler : INavActionHandler<OpenUrlNavAction> {
+    override val actionType = OpenUrlNavAction::class
+    override fun handle(action: OpenUrlNavAction, navigator: INavigator) {
         navigator.navigate { Intent.createChooser(Intent(Intent.ACTION_VIEW, action.uri), null) }
     }
 }
@@ -406,8 +405,9 @@ internal class OpenUrlNavActionExecutor(private val action: OpenUrlNavAction) : 
 @AutoLogNavAction(identifier = "open_app_settings")
 data object AppSettingsNavAction : INavAction
 
-internal class AppSettingsNavActionExecutor : INavActionExecutor {
-    override operator fun invoke(navigator: INavigator) {
+internal class AppSettingsNavActionHandler : INavActionHandler<AppSettingsNavAction> {
+    override val actionType = AppSettingsNavAction::class
+    override fun handle(action: AppSettingsNavAction, navigator: INavigator) {
         navigator.navigate {
             Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", packageName, null))
         }
@@ -415,36 +415,38 @@ internal class AppSettingsNavActionExecutor : INavActionExecutor {
 }
 ```
 
-Each also needs its factory, and all of them go into a `CommonsNavigationModule` with `binds arrayOf(...)`.
+All of them go into a `CommonsNavigationModule`, each bound with `binds arrayOf(INavActionHandler::class)`.
 
 ## Deciding where to go
 
-Keep the ViewModel describing what the user wants and let the factory decide the destination:
+Keep the ViewModel describing what the user wants and let the handler decide the destination:
 
 ```kotlin
-internal class OpenNoteNavActionFactory(
+internal class OpenNoteNavActionHandler(
     private val remoteConfig: IRemoteConfigProvider,
-) : INavActionFactory<OpenNoteNavAction> {
+) : INavActionHandler<OpenNoteNavAction> {
     override val actionType = OpenNoteNavAction::class
-    override fun resolve(action: OpenNoteNavAction): INavActionExecutor =
-        OpenNoteNavActionExecutor(action, openInEditor = remoteConfig.getBoolean("open_notes_in_editor", defaultValue = false))
+    override fun handle(action: OpenNoteNavAction, navigator: INavigator) {
+        val openInEditor = remoteConfig.getBoolean("open_notes_in_editor", defaultValue = false)
+        if (openInEditor) navigator.goNoteEditor(action.noteId) else navigator.goNoteDetail(action.noteId)
+    }
 }
 ```
 
-Read the value in `resolve`, not the constructor: the dispatcher creates each factory once and keeps it.
+Read the value in `handle`, not the constructor: the dispatcher creates each handler once and keeps it.
 
 ## Pitfalls
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| `IllegalStateException: No INavActionFactory registered for ...` on tap | Factory not bound, bound in a module loaded later with `loadKoinModules`, or registered for a parent type | Bind one factory per concrete action class, in modules passed to `startKoin`. Matching is by exact `action::class`. |
+| `IllegalStateException: No INavActionHandler registered for ...` on tap | Handler not bound, bound in a module loaded later with `loadKoinModules`, or registered for a parent type | Bind one handler per concrete action class, in modules passed to `startKoin`. Matching is by exact `action::class`. |
 | Navigation throws "destination ... cannot be found" | Route not in any Graph passed to `Navigation`, or its `deepLinks` override dropped the pattern you navigate to | Add it to a Graph; keep the navigation pattern in `deepLinks`. |
 | External link does nothing | `deepLinkScheme` differs from the manifest scheme, or a Route deep link includes a scheme | Use the same scheme in both; keep Route patterns scheme-less. |
 | Splash never disappears | The start route is a real screen that stays in the back stack | Add a launcher route that leaves with `popUpTo(...) { inclusive = true }`. |
 | Bundle args missing after returning from background | They are delivered once and not restored after process death | Use path or query parameters. |
 | Activity result arrives as an `ActivityResult`, not your contract's type | `navigateForResult` doesn't call `parseResult` | Parse from `INavigator.RESULT_KEY`. |
 | Every navigation logged twice | You passed a dispatcher already wrapped with `withLogging` | Pass the raw dispatcher; `Navigation` wraps it per screen. |
-| Navigation works but isn't logged | `_LogDecorator` not registered | Bind it next to the factory. |
+| Navigation works but isn't logged | `_LogDecorator` not registered | Bind it next to the handler. |
 | Screens see default UI preferences | `LocalUiPreference` not provided | Wrap the host in `Preferences(uiPreferences)`. |
 | Only the second of two quick emits happens | `nav` is a `StateFlow`; values conflate | Emit one action per user event. |
 
@@ -453,17 +455,16 @@ Read the value in `resolve`, not the constructor: the dispatcher creates each fa
 ```kotlin
 // dev.dexkot.mobile.core.ui.navigation.action
 interface INavAction
-interface INavActionFactory<T : INavAction> { val actionType: KClass<T>; fun resolve(action: T): INavActionExecutor }
-interface INavActionDispatcher { fun dispatch(action: INavAction): INavActionExecutor }
-class NavActionDispatcher(factories: List<INavActionFactory<*>>) : INavActionDispatcher
+interface INavActionHandler<T : INavAction> { val actionType: KClass<T>; fun handle(action: T, navigator: INavigator) }
+interface INavActionDispatcher { fun dispatch(action: INavAction, navigator: INavigator) }
+class NavActionDispatcher(handlers: List<INavActionHandler<*>>) : INavActionDispatcher
 interface INavActionLogDecorator {
     val actionType: KClass<out INavAction>
-    fun wrap(executor: INavActionExecutor, action: INavAction, logger: ILoggerInteractor): INavActionExecutor
+    fun log(action: INavAction, logger: ILoggerInteractor)
 }
 fun INavActionDispatcher.withLogging(logger: ILoggerInteractor, decorators: List<INavActionLogDecorator>): INavActionDispatcher
 
 // dev.dexkot.mobile.core.ui.navigation.navigator
-interface INavActionExecutor { operator fun invoke(navigator: INavigator) }
 interface INavigator {
     companion object { const val RESULT_KEY = "result" }
     val activity: Activity

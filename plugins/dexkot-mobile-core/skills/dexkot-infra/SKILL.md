@@ -11,7 +11,7 @@ executor and a config and never touches WorkManager. A feature that reads a flag
 on `IRemoteConfigProvider` and never knows whether Firebase or PostHog answers. A screen asks
 `IPermissionController` for a permission and gets a clear result instead of juggling rationale flags.
 
-Version covered: **0.27.0**. Read the reference for the area you are working on:
+Version covered: **0.28.0**. Read the reference for the area you are working on:
 - `references/work.md`: core-work, both backends, notifications, full Android + iOS wiring.
 - `references/remote-config.md`: handlers, provider, typed values, backend differences.
 - `references/permissions.md`: permission model, controller semantics, Compose helpers.
@@ -23,19 +23,19 @@ Version covered: **0.27.0**. Read the reference for the area you are working on:
 
 dependencies {
     // Background work (KMP)
-    implementation("dev.dexkot.mobile:core-work:0.27.0")
-    implementation("dev.dexkot.mobile:core-work-di-koin:0.27.0")
+    implementation("dev.dexkot.mobile:core-work:0.28.0")
+    implementation("dev.dexkot.mobile:core-work-di-koin:0.28.0")
     // Android WorkManager backend, app module only:
     implementation("androidx.work:work-runtime-ktx:2.11.1")
     implementation("io.insert-koin:koin-androidx-workmanager:4.1.1")
 
     // Remote config (KMP)
-    implementation("dev.dexkot.mobile:core-remoteconfig:0.27.0")
-    implementation("dev.dexkot.mobile:core-remoteconfig-di-koin:0.27.0")   // pulls both backends
+    implementation("dev.dexkot.mobile:core-remoteconfig:0.28.0")
+    implementation("dev.dexkot.mobile:core-remoteconfig-di-koin:0.28.0")   // pulls both backends
 
     // Permissions (Android only)
-    implementation("dev.dexkot.mobile:core-permission:0.27.0")
-    implementation("dev.dexkot.mobile:core-permission-di-koin:0.27.0")
+    implementation("dev.dexkot.mobile:core-permission:0.28.0")
+    implementation("dev.dexkot.mobile:core-permission-di-koin:0.28.0")
 }
 ```
 

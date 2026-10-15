@@ -10,7 +10,7 @@
 Keeping them apart means most code never holds an Activity, and only UI code ever interrupts the user.
 core-ui adds Compose helpers and logs every request and result automatically.
 
-Version: **0.27.0**. Android only.
+Version: **0.28.0**. Android only.
 
 - [Install](#install)
 - [1. Register the module](#1-register-the-module)
@@ -25,9 +25,9 @@ Version: **0.27.0**. Android only.
 ## Install
 
 ```kotlin
-implementation("dev.dexkot.mobile:core-permission:0.27.0")
-implementation("dev.dexkot.mobile:core-permission-di-koin:0.27.0")
-implementation("dev.dexkot.mobile:core-ui:0.27.0")          // Compose helpers
+implementation("dev.dexkot.mobile:core-permission:0.28.0")
+implementation("dev.dexkot.mobile:core-permission-di-koin:0.28.0")
+implementation("dev.dexkot.mobile:core-ui:0.28.0")          // Compose helpers
 ```
 
 Remember to declare the permissions in your `AndroidManifest.xml` as usual.

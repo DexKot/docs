@@ -12,7 +12,7 @@ the DexKot module leaves that binding out on purpose and the app provides it. Th
 usable with any DI, lets iOS share the KMP modules, and stops the library from making product
 decisions for you.
 
-Version covered: **0.27.0**, Koin **4.1.1**. Per-module bindings and requirements:
+Version covered: **0.28.0**, Koin **4.1.1**. Per-module bindings and requirements:
 `references/modules.md`. A complete app graph (Application, logging, remote config, WorkManager,
 navigation, screens): `references/app-setup.md`.
 
@@ -29,14 +29,14 @@ dependencyResolutionManagement {
 }
 // app/build.gradle.kts — pick the ones you use
 dependencies {
-    implementation("dev.dexkot.mobile:core-logger-di-koin:0.27.0")        // KMP; brings core-logger(-firebase/-posthog) via api
-    implementation("dev.dexkot.mobile:core-remoteconfig-di-koin:0.27.0")  // KMP; brings core-remoteconfig(-firebase/-posthog) via api
-    implementation("dev.dexkot.mobile:core-work-di-koin:0.27.0")          // KMP; brings core-work via api
-    implementation("dev.dexkot.mobile:core-permission-di-koin:0.27.0")    // Android
-    implementation("dev.dexkot.mobile:core-permission:0.27.0")            //   ↳ its core is `implementation`: add it yourself
-    implementation("dev.dexkot.mobile:core-ui-di-koin:0.27.0")            // Android
-    implementation("dev.dexkot.mobile:core-ui:0.27.0")                    //   ↳ its core is `implementation`: add it yourself
-    implementation("dev.dexkot.mobile:core-preferences:0.27.0")           // KMP; exposes settingsFactoryModule directly
+    implementation("dev.dexkot.mobile:core-logger-di-koin:0.28.0")        // KMP; brings core-logger(-firebase/-posthog) via api
+    implementation("dev.dexkot.mobile:core-remoteconfig-di-koin:0.28.0")  // KMP; brings core-remoteconfig(-firebase/-posthog) via api
+    implementation("dev.dexkot.mobile:core-work-di-koin:0.28.0")          // KMP; brings core-work via api
+    implementation("dev.dexkot.mobile:core-permission-di-koin:0.28.0")    // Android
+    implementation("dev.dexkot.mobile:core-permission:0.28.0")            //   ↳ its core is `implementation`: add it yourself
+    implementation("dev.dexkot.mobile:core-ui-di-koin:0.28.0")            // Android
+    implementation("dev.dexkot.mobile:core-ui:0.28.0")                    //   ↳ its core is `implementation`: add it yourself
+    implementation("dev.dexkot.mobile:core-preferences:0.28.0")           // KMP; exposes settingsFactoryModule directly
 
     implementation("io.insert-koin:koin-android:4.1.1")
     implementation("io.insert-koin:koin-androidx-compose:4.1.1")          // koinViewModel / koinInject
@@ -57,7 +57,7 @@ iOS: build from source (`publishToMavenLocal`). `core-ui-di-koin`, `core-permiss
 | core-remoteconfig-di-koin | `remoteConfigModule(dispatcher = Dispatchers.Default)`; qualifiers `firebaseRemoteConfig()`, `postHogRemoteConfig()` | unqualified `single<IRemoteConfigHandler>`; a `Json` to pass in |
 | core-work-di-koin | `workManagerWorkModule` (Android) **or** `coroutineWorkModule`; both include `workFactoriesModule`; qualifier `workCoroutineScope()` | per work type: `IWorkExecutorProvider` + `IWorkTypeConfigProvider`; WorkManager also: worker + `WorkerClassProvider` + `IPermissionChecker` |
 | core-permission-di-koin | `permissionModule(preferencesName = "dev.dexkot.permissions.preferences")`; qualifier `permissionPreferences()` | nothing (needs `androidContext`) |
-| core-ui-di-koin | `uiModule(preferencesName = "dev.dexkot.ui.preferences")` | your `INavActionFactory`s (multi-bound) |
+| core-ui-di-koin | `uiModule(preferencesName = "dev.dexkot.ui.preferences")` | your `INavActionHandler`s (multi-bound) |
 | core-preferences | `settingsFactoryModule` | your named `Settings` stores |
 
 ## The two bindings DexKot leaves to you
@@ -136,7 +136,7 @@ the qualifier all `AndroidViewModel<*, *>` definitions collide on type erasure.
 
 ```kotlin
 val NoteDetailModule = module {
-    factory { NoteDetailNavActionFactory() } binds arrayOf(INavActionFactory::class)
+    factory { NoteDetailNavActionHandler() } binds arrayOf(INavActionHandler::class)
     factory { NoteDetailNavAction_LogDecorator() } binds arrayOf(INavActionLogDecorator::class)
 
     viewModel<AndroidViewModel<NoteDetailModel, NoteDetailIntention>>(noteDetailViewModel()) { parameters ->
@@ -230,7 +230,7 @@ val UiModule = module {
 
 ## Related skills
 
-- **dexkot-navigation**: Routes, NavAction triples, the Navigation host that consumes this graph.
+- **dexkot-navigation**: Routes, NavActions and their handlers, the Navigation host that consumes this graph.
 - **dexkot-viewmodel**: what goes inside the `viewModel { }` definition.
 - **dexkot-logging**: `ILogger` composition, `@AutoLog*` and generated `withLogging()`.
 - **dexkot-data-layer**: data sources, repositories and `withTransaction {}` behind the `single`/`factory` rules.

@@ -224,13 +224,9 @@ import androidx.core.os.BundleCompat
 @AutoLogNavAction(identifier = "pick_attachment")
 data class PickAttachmentNavAction(val mimeTypes: List<String>) : INavAction
 
-internal class PickAttachmentNavActionFactory : INavActionFactory<PickAttachmentNavAction> {
+internal class PickAttachmentNavActionHandler : INavActionHandler<PickAttachmentNavAction> {
     override val actionType = PickAttachmentNavAction::class
-    override fun resolve(action: PickAttachmentNavAction): INavActionExecutor = PickAttachmentNavActionExecutor(action)
-}
-
-internal class PickAttachmentNavActionExecutor(private val action: PickAttachmentNavAction) : INavActionExecutor {
-    override operator fun invoke(navigator: INavigator) {
+    override fun handle(action: PickAttachmentNavAction, navigator: INavigator) {
         navigator.navigateForResult(ActivityResultContracts.OpenDocument()) { _, launch ->
             launch(action.mimeTypes.toTypedArray())
         }
@@ -252,31 +248,24 @@ override fun onResume(result: Bundle?) {
 
 ## Conditional routing
 
-The ViewModel emits "open note"; the factory decides between editor and read-only viewer using a
+The ViewModel emits "open note"; the handler decides between editor and read-only viewer using a
 remote flag, so the experiment never leaks into the ViewModel.
 
 ```kotlin
-internal class OpenNoteNavActionFactory(
+internal class OpenNoteNavActionHandler(
     private val remoteConfig: IRemoteConfigProvider,
-) : INavActionFactory<OpenNoteNavAction> {
+) : INavActionHandler<OpenNoteNavAction> {
     override val actionType = OpenNoteNavAction::class
 
-    // Read the flag here, per dispatch: the factory instance lives as long as the dispatcher (process).
-    override fun resolve(action: OpenNoteNavAction): INavActionExecutor =
-        OpenNoteNavActionExecutor(action, openInEditor = remoteConfig.getBoolean("open_notes_in_editor", defaultValue = false))
-}
-
-internal class OpenNoteNavActionExecutor(
-    private val action: OpenNoteNavAction,
-    private val openInEditor: Boolean,
-) : INavActionExecutor {
-    override operator fun invoke(navigator: INavigator) {
+    // Read the flag here, per dispatch: the handler instance lives as long as the dispatcher (process).
+    override fun handle(action: OpenNoteNavAction, navigator: INavigator) {
+        val openInEditor = remoteConfig.getBoolean("open_notes_in_editor", defaultValue = false)
         if (openInEditor) navigator.goNoteEditor(action.noteId) else navigator.goNoteDetail(action.noteId)
     }
 }
 
 // Koin
-factory { OpenNoteNavActionFactory(remoteConfig = get()) } binds arrayOf(INavActionFactory::class)
+factory { OpenNoteNavActionHandler(remoteConfig = get()) } binds arrayOf(INavActionHandler::class)
 ```
 
 Use the two-argument `getBoolean(key, defaultValue)`: the one-argument overload returns `Boolean?`.
@@ -288,8 +277,9 @@ Use the two-argument `getBoolean(key, defaultValue)`: the one-argument overload 
 @AutoLogNavAction(identifier = "open_url")
 data class OpenUrlNavAction(val uri: Uri) : INavAction
 
-internal class OpenUrlNavActionExecutor(private val action: OpenUrlNavAction) : INavActionExecutor {
-    override operator fun invoke(navigator: INavigator) {
+internal class OpenUrlNavActionHandler : INavActionHandler<OpenUrlNavAction> {
+    override val actionType = OpenUrlNavAction::class
+    override fun handle(action: OpenUrlNavAction, navigator: INavigator) {
         // A chooser avoids ActivityNotFoundException when no default browser is set.
         navigator.navigate { Intent.createChooser(Intent(Intent.ACTION_VIEW, action.uri), null) }
     }
@@ -299,8 +289,9 @@ internal class OpenUrlNavActionExecutor(private val action: OpenUrlNavAction) : 
 @AutoLogNavAction(identifier = "open_app_settings")
 data object AppSettingsNavAction : INavAction
 
-internal class AppSettingsNavActionExecutor : INavActionExecutor {
-    override operator fun invoke(navigator: INavigator) {
+internal class AppSettingsNavActionHandler : INavActionHandler<AppSettingsNavAction> {
+    override val actionType = AppSettingsNavAction::class
+    override fun handle(action: AppSettingsNavAction, navigator: INavigator) {
         navigator.navigate {   // receiver is the Activity: packageName is available
             Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", packageName, null))
         }
@@ -309,17 +300,17 @@ internal class AppSettingsNavActionExecutor : INavActionExecutor {
 
 // commons/di/CommonsNavigationModule.kt
 val CommonsNavigationModule = module {
-    factory { BackNavActionFactory() } binds arrayOf(INavActionFactory::class)
+    factory { BackNavActionHandler() } binds arrayOf(INavActionHandler::class)
     factory { BackNavAction_LogDecorator() } binds arrayOf(INavActionLogDecorator::class)
-    factory { OpenUrlNavActionFactory() } binds arrayOf(INavActionFactory::class)
+    factory { OpenUrlNavActionHandler() } binds arrayOf(INavActionHandler::class)
     factory { OpenUrlNavAction_LogDecorator() } binds arrayOf(INavActionLogDecorator::class)
-    factory { AppSettingsNavActionFactory() } binds arrayOf(INavActionFactory::class)
+    factory { AppSettingsNavActionHandler() } binds arrayOf(INavActionHandler::class)
     factory { AppSettingsNavAction_LogDecorator() } binds arrayOf(INavActionLogDecorator::class)
 }
 ```
 
-(`Settings` is `android.provider.Settings`.) Each action needs its factory; for a `data object`
-the factory's `resolve` simply returns `AppSettingsNavActionExecutor()`.
+(`Settings` is `android.provider.Settings`.) A `data object` action still needs its own handler,
+typed with the object's class (`INavActionHandler<AppSettingsNavAction>`).
 
 ## Clearing history
 
@@ -353,9 +344,10 @@ External links only open screens if the Activity accepts your scheme and it matc
 
 - ViewModel: call `input(...)` and assert `viewModel.nav.value?.handle() == NoteDetailNavAction(42)`.
   NavActions are data classes, so equality is structural.
-- Factory/executor: `NavActionDispatcher(listOf(NoteDetailNavActionFactory())).dispatch(action)` returns
-  the executor; invoke it with a fake `INavigator` that records `navigate(uri: String, ...)` calls. Note
+- Handler: call `NoteDetailNavActionHandler().handle(action, fakeNavigator)` (or go through
+  `NavActionDispatcher(listOf(handler)).dispatch(action, fakeNavigator)`) with a fake `INavigator` that
+  records `navigate(uri: String, ...)` calls. Note
   that the String overload is a default method that builds a `Uri` via `toUri()`, so either override it
   in the fake or run under Robolectric.
 - Registration: start a `koinApplication` with your modules and check that
-  `getAll<INavActionFactory<*>>().map { it.actionType }` contains every action class you emit.
+  `getAll<INavActionHandler<*>>().map { it.actionType }` contains every action class you emit.

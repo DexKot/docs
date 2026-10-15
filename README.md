@@ -8,7 +8,7 @@ background work, remote config and runtime permissions.
 This repository holds the **public documentation** and the **Claude Code skills** for the libraries.
 The artifacts are published to a public Maven repository.
 
-**Current version: `0.27.0`**
+**Current version: `0.28.0`**
 
 ## Install
 
@@ -24,8 +24,8 @@ dependencyResolutionManagement {
 
 // build.gradle.kts
 dependencies {
-    implementation("dev.dexkot.mobile:core-foundation:0.27.0")
-    implementation("dev.dexkot.mobile:core-ui:0.27.0")
+    implementation("dev.dexkot.mobile:core-foundation:0.28.0")
+    implementation("dev.dexkot.mobile:core-ui:0.28.0")
     // ...the modules you need, see below
 }
 ```
@@ -104,7 +104,7 @@ write code with DexKot:
 | `dexkot-data-layer` | Data sources, repositories, use cases, SQLDelight transactions, preferences |
 | `dexkot-viewmodel` | ViewModels with the Model/Intention pattern, `Resource`, saved state |
 | `dexkot-screen` | Compose screens, `ScreenState`, `fieldMutableStateOf`, composition locals, permissions in UI |
-| `dexkot-navigation` | Routes, graphs, the NavAction triple, arguments and results, deep links |
+| `dexkot-navigation` | Routes, graphs, NavActions and their handlers, arguments and results, deep links |
 | `dexkot-di-koin` | Koin wiring for DexKot modules, screens and the application |
 | `dexkot-logging` | Loggers, AutoLog annotations and KSP setup |
 | `dexkot-infra` | Background work, remote config and permissions |

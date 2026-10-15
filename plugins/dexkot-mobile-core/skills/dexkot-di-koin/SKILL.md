@@ -57,7 +57,7 @@ iOS: build from source (`publishToMavenLocal`). `core-ui-di-koin`, `core-permiss
 | core-remoteconfig-di-koin | `remoteConfigModule(dispatcher = Dispatchers.Default)`; qualifiers `firebaseRemoteConfig()`, `postHogRemoteConfig()` | unqualified `single<IRemoteConfigHandler>`; a `Json` to pass in |
 | core-work-di-koin | `workManagerWorkModule` (Android) **or** `coroutineWorkModule`; both include `workFactoriesModule`; qualifier `workCoroutineScope()` | per work type: `IWorkExecutorProvider` + `IWorkTypeConfigProvider`; WorkManager also: worker + `WorkerClassProvider` + `IPermissionChecker` |
 | core-permission-di-koin | `permissionModule(preferencesName = "dev.dexkot.permissions.preferences")`; qualifier `permissionPreferences()` | nothing (needs `androidContext`) |
-| core-ui-di-koin | `uiModule(preferencesName = "dev.dexkot.ui.preferences")` | your `INavActionFactory`s (multi-bound) |
+| core-ui-di-koin | `uiModule(preferencesName = "dev.dexkot.ui.preferences")` | your `INavActionHandler`s (multi-bound) |
 | core-preferences | `settingsFactoryModule` | your named `Settings` stores |
 
 ## The two bindings DexKot leaves to you
@@ -136,7 +136,7 @@ the qualifier all `AndroidViewModel<*, *>` definitions collide on type erasure.
 
 ```kotlin
 val NoteDetailModule = module {
-    factory { NoteDetailNavActionFactory() } binds arrayOf(INavActionFactory::class)
+    factory { NoteDetailNavActionHandler() } binds arrayOf(INavActionHandler::class)
     factory { NoteDetailNavAction_LogDecorator() } binds arrayOf(INavActionLogDecorator::class)
 
     viewModel<AndroidViewModel<NoteDetailModel, NoteDetailIntention>>(noteDetailViewModel()) { parameters ->
@@ -230,7 +230,7 @@ val UiModule = module {
 
 ## Related skills
 
-- **dexkot-navigation**: Routes, NavAction triples, the Navigation host that consumes this graph.
+- **dexkot-navigation**: Routes, NavActions and their handlers, the Navigation host that consumes this graph.
 - **dexkot-viewmodel**: what goes inside the `viewModel { }` definition.
 - **dexkot-logging**: `ILogger` composition, `@AutoLog*` and generated `withLogging()`.
 - **dexkot-data-layer**: data sources, repositories and `withTransaction {}` behind the `single`/`factory` rules.

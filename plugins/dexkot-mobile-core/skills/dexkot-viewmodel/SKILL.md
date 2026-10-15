@@ -403,7 +403,7 @@ the ViewModel's package. The decorator logs each annotated intention before forw
 - `references/api.md` — every public signature in the viewmodel package, `Resource` semantics per
   method, `Event`, `Empty`, custom decorators, unit-testing a ViewModel.
 - `dexkot-screen` — ScreenState, `ModelUpdates`, the Screen composable, composition locals.
-- `dexkot-navigation` — `Route`, `INavAction`, factories/executors, passing args and results.
+- `dexkot-navigation` — `Route`, `INavAction` and its handler, passing args and results.
 - `dexkot-results-errors` — `ResultOf`, `ErrorEntity`.
 - `dexkot-di-koin` — `uiModule()`, ViewModel registration, qualifiers.
 - `dexkot-logging` — `@AutoLogViewModel`, `@AutoLogIntention`, `LogParam`, KSP.

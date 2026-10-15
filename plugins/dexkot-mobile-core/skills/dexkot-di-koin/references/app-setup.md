@@ -186,7 +186,7 @@ internal val NotesUseCaseModule = module {
 ```kotlin
 import dev.dexkot.mobile.core.permission.di.koin.permissionModule
 import dev.dexkot.mobile.core.ui.di.koin.uiModule
-import dev.dexkot.mobile.core.ui.navigation.action.INavActionFactory
+import dev.dexkot.mobile.core.ui.navigation.action.INavActionHandler
 import dev.dexkot.mobile.core.ui.navigation.action.INavActionLogDecorator
 import dev.dexkot.mobile.core.ui.viewmodel.android.AndroidViewModel
 import org.koin.core.module.dsl.viewModel
@@ -205,9 +205,9 @@ val UiModule = module {
     )
 }
 
-// Screen module: nav factory + log decorator + ViewModel
+// Screen module: nav handler + log decorator + ViewModel
 val NoteListModule = module {
-    factory { NoteListNavActionFactory() } binds arrayOf(INavActionFactory::class)
+    factory { NoteListNavActionHandler() } binds arrayOf(INavActionHandler::class)
     factory { NoteListNavAction_LogDecorator() } binds arrayOf(INavActionLogDecorator::class)
 
     viewModel<AndroidViewModel<NoteListModel, NoteListIntention>>(noteListViewModel()) { parameters ->

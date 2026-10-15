@@ -252,14 +252,9 @@ Generated `OpenNoteNavAction_LogDecorator.kt` (public class, no `withLogging`):
 ```kotlin
 class OpenNoteNavAction_LogDecorator : INavActionLogDecorator {
     override val actionType: KClass<out INavAction> = OpenNoteNavAction::class
-    override fun wrap(executor: INavActionExecutor, action: INavAction, logger: ILoggerInteractor): INavActionExecutor {
+    override fun log(action: INavAction, logger: ILoggerInteractor) {
         val typedAction = action as OpenNoteNavAction
-        return object : INavActionExecutor {
-            override fun invoke(navigator: INavigator) {
-                logger.navigate(navigationId = "open_note", params = mapOf("note_id" to typedAction.noteId.toString()))
-                executor(navigator)
-            }
-        }
+        logger.navigate(navigationId = "open_note", params = mapOf("note_id" to typedAction.noteId.toString()))
     }
 }
 ```

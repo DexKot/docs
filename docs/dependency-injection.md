@@ -89,7 +89,7 @@ Registers `IPermissionChecker`, the `SharedPreferences` used to track which perm
 
 ### `uiModule(preferencesName = "dev.dexkot.ui.preferences")`
 
-Registers the `INavActionDispatcher` (built from every `INavActionFactory` you bind), `IUiPreferences`
+Registers the `INavActionDispatcher` (built from every `INavActionHandler` you bind), `IUiPreferences`
 and `IResourceProvider`.
 
 ### `settingsFactoryModule`
@@ -105,7 +105,7 @@ create named key-value stores.
 | `remoteConfigModule` | unqualified `single<IRemoteConfigHandler>`, plus the `Json` it needs | Which backend serves flags; your serializer settings. |
 | `workManagerWorkModule` | worker class + `worker { }`, `single<WorkerClassProvider>`, `IPermissionChecker` (via `permissionModule`), per work type `IWorkExecutorProvider` + `IWorkTypeConfigProvider` (+ optional `IWorkNotificationProvider`) | WorkManager persists the worker's class name, so the class must be owned by the app; the work itself is yours. |
 | `coroutineWorkModule` | per work type `IWorkExecutorProvider` + `IWorkTypeConfigProvider` | Same. |
-| `uiModule` | every `INavActionFactory` | Your screens and actions. |
+| `uiModule` | every `INavActionHandler` | Your screens and actions. |
 
 ```kotlin
 val LoggingModule = module {
@@ -199,14 +199,14 @@ internal val NoteModule = module {
 ```
 
 Data sources, databases, preference stores and coroutine scopes are `single`: two instances would mean
-two caches or two connections to the same file. Repositories, use cases, nav factories and decorators
+two caches or two connections to the same file. Repositories, use cases, nav handlers and decorators
 hold no state and are `factory`.
 
 ### ViewModels: generic type plus a qualifier
 
 ```kotlin
 val NoteDetailModule = module {
-    factory { NoteDetailNavActionFactory() } binds arrayOf(INavActionFactory::class)
+    factory { NoteDetailNavActionHandler() } binds arrayOf(INavActionHandler::class)
     factory { NoteDetailNavAction_LogDecorator() } binds arrayOf(INavActionLogDecorator::class)
 
     viewModel<AndroidViewModel<NoteDetailModel, NoteDetailIntention>>(noteDetailViewModel()) { parameters ->
@@ -247,12 +247,12 @@ registered without a central list.
 | `InstanceCreationException` when a screen opens (`IRemoteConfigProvider`) | No unqualified `IRemoteConfigHandler` | Bind one (see above). |
 | Changing the remote config timeout has no effect | Handlers are singles; parameters apply on first creation only | Pass the value in the single place you create the handler. |
 | Work never runs / wrong backend | Both work backends included; last one wins | Include exactly one per platform. |
-| `IllegalStateException: No INavActionFactory registered` | Factory not bound, or in a module loaded with `loadKoinModules` after the dispatcher was created | Bind it and load it in `startKoin`. Work factories behave the same way. |
+| `IllegalStateException: No INavActionHandler registered` | Handler not bound, or in a module loaded with `loadKoinModules` after the dispatcher was created | Bind it and load it in `startKoin`. Work factories behave the same way. |
 | Users lose permission tracking / UI prefs after adopting DexKot | Default preference names differ from yours | Pass your existing names to `permissionModule` / `uiModule`. |
 | Unresolved `core-ui` / `core-permission` classes | Their `-di-koin` artifacts depend on them with `implementation` | Add the core artifacts explicitly. |
 
 Tip: a Robolectric test that builds a `koinApplication` with your modules and resolves the key
-bindings (`IRemoteConfigProvider`, `INavActionDispatcher`, `getAll<INavActionFactory<*>>()`) catches
+bindings (`IRemoteConfigProvider`, `INavActionDispatcher`, `getAll<INavActionHandler<*>>()`) catches
 most of these in CI. Bind fakes for Firebase/PostHog-backed types, which start their SDKs on creation.
 
 ## API reference

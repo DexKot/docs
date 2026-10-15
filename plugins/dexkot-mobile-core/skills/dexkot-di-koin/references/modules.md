@@ -159,11 +159,11 @@ fun uiModule(preferencesName: String = "dev.dexkot.ui.preferences"): Module
 
 | Definition | Scope | Notes |
 |------------|-------|-------|
-| `INavActionDispatcher` → `NavActionDispatcher(getAll<INavActionFactory<*>>())` | single | factory list captured on first resolution |
+| `INavActionDispatcher` → `NavActionDispatcher(getAll<INavActionHandler<*>>())` | single | handler list captured on first resolution |
 | `IUiPreferences` → `UiPreferences(SharedPreferences named preferencesName)` | single | |
 | `IResourceProvider` → `ResourceProvider(context = get())` | factory | uses the `Context` registered by `androidContext(...)` |
 
-Requires from the app: every `INavActionFactory` bound with `binds arrayOf(INavActionFactory::class)`
+Requires from the app: every `INavActionHandler` bound with `binds arrayOf(INavActionHandler::class)`
 in modules loaded by `startKoin`. `INavActionLogDecorator`s are not consumed here; the Navigation host
 collects them (`getAll<INavActionLogDecorator>()`).
 
@@ -190,18 +190,18 @@ Koin de-duplicates identical `includes`, so several feature modules may include 
 ## Verifying a graph in tests
 
 Resolve the bindings you depend on in a plain JVM/Robolectric test. It catches missing app bindings
-(logger, remote config handler, nav factories) in CI instead of in a user's session.
+(logger, remote config handler, nav handlers) in CI instead of in a user's session.
 
 ```kotlin
 @RunWith(RobolectricTestRunner::class)
 class AppGraphTest {
     @Test
-    fun `navigation factories are registered`() {
+    fun `navigation handlers are registered`() {
         val app = koinApplication {
             androidContext(RuntimeEnvironment.getApplication())
             modules(UiModule)
         }
-        val types = app.koin.getAll<INavActionFactory<*>>().map { it.actionType }
+        val types = app.koin.getAll<INavActionHandler<*>>().map { it.actionType }
         assertTrue(NoteDetailNavAction::class in types)
         app.close()
     }

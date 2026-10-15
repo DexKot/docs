@@ -1,14 +1,13 @@
 ---
 name: dexkot-navigation
-description: "Compose navigation with DexKot mobile-core (dev.dexkot.mobile core-ui, core-ui-di-koin). Use whenever the task is to create a screen destination, a Route or Graph, a NavAction + NavActionFactory + NavActionExecutor triple, navigate between screens, pass path or query parameters (createRoute, queryParameter), read arguments from SavedStateHandle, return a result with popBackStack(result) / onResume(result), launch an Activity for result (navigateForResult), open a URL or the app settings, set up the root FragmentActivity.Navigation host, rememberNavigator, deep links / deepLinkScheme, splash removal, or INavActionDispatcher / INavigator / @AutoLogNavAction wiring. Use it even if the user just says \"go to screen X\" or \"add navigation\" in a DexKot project."
+description: "Compose navigation with DexKot mobile-core (dev.dexkot.mobile core-ui, core-ui-di-koin). Use whenever the task is to create a screen destination, a Route or Graph, a NavAction + NavActionHandler pair, navigate between screens, pass path or query parameters (createRoute, queryParameter), read arguments from SavedStateHandle, return a result with popBackStack(result) / onResume(result), launch an Activity for result (navigateForResult), open a URL or the app settings, set up the root FragmentActivity.Navigation host, rememberNavigator, deep links / deepLinkScheme, splash removal, or INavActionDispatcher / INavigator / @AutoLogNavAction wiring. Use it even if the user just says \"go to screen X\" or \"add navigation\" in a DexKot project."
 ---
 
 # DexKot navigation
 
 DexKot builds navigation on top of androidx Navigation Compose, but ViewModels never see it. A
-ViewModel only **emits a data object** (`INavAction`). The framework resolves that object into an
-executor through a factory registered in Koin, and the executor performs the navigation on an
-`INavigator`. Every destination is a `Route` object that owns its URI pattern, arguments, ViewModel
+ViewModel only **emits a data object** (`INavAction`). The framework finds the handler registered in
+Koin for that object's class, and the handler performs the navigation on an `INavigator`. Every destination is a `Route` object that owns its URI pattern, arguments, ViewModel
 factory and screen content, and every in-app navigation goes through a deep link URI.
 
 The payoff: ViewModels are unit-testable without Android (assert the emitted action), navigation
@@ -51,9 +50,9 @@ dependencies {
 ViewModel.emit(NoteDetailNavAction(noteId = 42))          // AndroidViewModel.emit, protected
   → viewModel.nav: StateFlow<Event<INavAction>?>
   → NavigationSubscriber (per screen, added by Navigation)
-  → INavActionDispatcher.dispatch(action)                  // wrapped per screen with log decorators
-      → INavActionFactory<NoteDetailNavAction>.resolve(action): INavActionExecutor
-  → executor(navigator)                                    // INavActionExecutor.invoke(INavigator)
+  → INavActionDispatcher.dispatch(action, navigator)       // wrapped per screen with log decorators
+      → INavActionLogDecorator.log(action, logger)         // if one is registered for action::class
+      → INavActionHandler<NoteDetailNavAction>.handle(action, navigator)
   → navigator.navigate("notes/42")                         // Route's INavigator extension
 ```
 
@@ -62,11 +61,11 @@ ViewModel.emit(NoteDetailNavAction(noteId = 42))          // AndroidViewModel.em
 
 ## Build a destination, step by step
 
-Package layout per screen (the triple and the Route live together in `route/`):
+Package layout per screen (the action, its handler and the Route live together in `route/`):
 
 ```
 notes/detail/
-├── route/   NoteDetailRoute.kt, NoteDetailNavAction.kt, NoteDetailNavActionFactory.kt, NoteDetailNavActionExecutor.kt
+├── route/   NoteDetailRoute.kt, NoteDetailNavAction.kt, NoteDetailNavActionHandler.kt
 ├── di/      NoteDetailModule.kt
 ├── viewmodel/  NoteDetailViewModel.kt, NoteDetailModel.kt, NoteDetailIntention.kt
 └── screen/  NoteDetailScreen.kt
@@ -127,42 +126,36 @@ or read a wrong key. The `INavigator` and `SavedStateHandle` extensions are the 
 out. `identifier` names the screen for logging (`loggerFactory(route.identifier)`) and is passed to the
 ViewModel definition through `parametersOf` so its generated logging decorator knows its source.
 
-### 2. The NavAction triple
+### 2. The NavAction and its handler
 
 ```kotlin
 // NoteDetailNavAction.kt — data only: what the ViewModel knows
 @AutoLogNavAction(identifier = "go_note_detail", params = [LogParam(logName = "note_id", paramName = "noteId")])
 data class NoteDetailNavAction(val noteId: Long) : INavAction
 
-// NoteDetailNavActionFactory.kt — the injection point
-internal class NoteDetailNavActionFactory : INavActionFactory<NoteDetailNavAction> {
+// NoteDetailNavActionHandler.kt — the injection point and the only code that touches INavigator
+internal class NoteDetailNavActionHandler : INavActionHandler<NoteDetailNavAction> {
     override val actionType = NoteDetailNavAction::class
-    override fun resolve(action: NoteDetailNavAction): INavActionExecutor = NoteDetailNavActionExecutor(action)
-}
-
-// NoteDetailNavActionExecutor.kt — the only code that touches INavigator
-internal class NoteDetailNavActionExecutor(
-    private val action: NoteDetailNavAction,
-) : INavActionExecutor {
-    override operator fun invoke(navigator: INavigator) {
+    override fun handle(action: NoteDetailNavAction, navigator: INavigator) {
         navigator.goNoteDetail(noteId = action.noteId) // import ...NoteDetailRoute.goNoteDetail
     }
 }
 ```
 
-Imports: `dev.dexkot.mobile.core.ui.navigation.action.{INavAction, INavActionFactory}`,
-`dev.dexkot.mobile.core.ui.navigation.navigator.{INavActionExecutor, INavigator}`,
+Imports: `dev.dexkot.mobile.core.ui.navigation.action.{INavAction, INavActionHandler}`,
+`dev.dexkot.mobile.core.ui.navigation.navigator.INavigator`,
 `dev.dexkot.mobile.core.annotation.{AutoLogNavAction, LogParam}`.
 
-Why three classes: the action is a plain value the ViewModel can emit and tests can compare; the
-factory is resolved from Koin, so it can receive dependencies (preferences, remote config) the
-ViewModel should not know about; the executor holds the navigation code. See "Where decisions belong".
+Why two classes: the action is a plain value the ViewModel can emit and tests can compare; the
+handler is resolved from Koin, so it can receive dependencies (preferences, remote config) the
+ViewModel should not know about, and it holds the navigation code. The dispatcher keeps one handler
+instance for the whole process: never store per-navigation state in its fields. See "Where decisions belong".
 
 ### 3. Register in Koin (screen module)
 
 ```kotlin
 val NoteDetailModule = module {
-    factory { NoteDetailNavActionFactory() } binds arrayOf(INavActionFactory::class)
+    factory { NoteDetailNavActionHandler() } binds arrayOf(INavActionHandler::class)
     factory { NoteDetailNavAction_LogDecorator() } binds arrayOf(INavActionLogDecorator::class) // KSP-generated
 
     viewModel<AndroidViewModel<NoteDetailModel, NoteDetailIntention>>(noteDetailViewModel()) { parameters ->
@@ -174,8 +167,8 @@ val NoteDetailModule = module {
 internal fun noteDetailViewModel() = named("note_detail_viewmodel")
 ```
 
-`uiModule()` builds the dispatcher from `getAll<INavActionFactory<*>>()`; the `binds arrayOf(...)`
-is what makes your factory part of that list. Details in **dexkot-di-koin**.
+`uiModule()` builds the dispatcher from `getAll<INavActionHandler<*>>()`; the `binds arrayOf(...)`
+is what makes your handler part of that list. Details in **dexkot-di-koin**.
 
 ### 4. Add the Route to a Graph
 
@@ -265,15 +258,16 @@ wraps the dispatcher with `withLogging(logger, decorators)`, and attaches `Navig
 ## Shared "commons" actions
 
 Actions that any screen can emit (back, open URL, app settings, share, email) live once in a
-`navigation/commons/` package, each as its own triple, registered in one `CommonsNavigationModule`.
+`navigation/commons/` package, each as its own action + handler, registered in one `CommonsNavigationModule`.
 Back is the one every app needs:
 
 ```kotlin
 @AutoLogNavAction(identifier = "back")
 data class BackNavAction(val result: Bundle? = null) : INavAction
 
-internal class BackNavActionExecutor(private val action: BackNavAction) : INavActionExecutor {
-    override operator fun invoke(navigator: INavigator) = navigator.popBackStack(result = action.result)
+internal class BackNavActionHandler : INavActionHandler<BackNavAction> {
+    override val actionType = BackNavAction::class
+    override fun handle(action: BackNavAction, navigator: INavigator) = navigator.popBackStack(result = action.result)
 }
 ```
 
@@ -281,34 +275,34 @@ Open-URL and app-settings versions are in `references/recipes.md#commons`.
 
 ## Where decisions belong
 
-Put "which screen?" logic in the Factory/Executor, not in the ViewModel. The ViewModel says *what the
-user wants* (`OpenNote(noteId)`); the factory, injected with `IUiPreferences`, `IRemoteConfigProvider`
+Put "which screen?" logic in the handler, not in the ViewModel. The ViewModel says *what the
+user wants* (`OpenNote(noteId)`); the handler, injected with `IUiPreferences`, `IRemoteConfigProvider`
 or a use case, decides *where that leads* (editor vs read-only view, onboarding first, experiment
 arm). This keeps ViewModels free of routing concerns and lets you change a flow without touching
-screens. Read the dependency inside `resolve()` / `invoke()`, not in the factory constructor: factories
+screens. Read the dependency inside `handle()`, not in the handler constructor: handlers
 are instantiated once (see Gotchas). Example in `references/recipes.md#conditional-routing`.
 
 ## Rules
 
 - Emit `INavAction`s from ViewModels; never inject `INavigator`, `NavController` or `Context` to navigate.
-- One factory per concrete action class, registered with `binds arrayOf(INavActionFactory::class)`.
+- One handler per concrete action class, registered with `binds arrayOf(INavActionHandler::class)`.
 - Every destination is an `object : Route<Model, Intention>` in its `route/` folder, listed in a `Graph`.
 - Navigate only through the Route's `INavigator` extension, which calls `navigate(uri = createDeepLink(...))`.
 - Keep route patterns and `deepLinks` scheme-less (`"notes/{note_id}"`); `Navigation` adds `"$deepLinkScheme://"`.
 - Prefer path/query params over `args` Bundles.
-- Annotate every action with `@AutoLogNavAction` and register its `_LogDecorator` next to the factory.
+- Annotate every action with `@AutoLogNavAction` and register its `_LogDecorator` next to the handler.
 - Give the root `Navigation` the raw dispatcher from Koin; it adds logging per screen.
 
 ## Gotchas
 
-- **Exact-class lookup.** Factories and log decorators are matched by `action::class`. A factory for a
-  sealed parent or a superclass never matches its subclasses. A missing factory throws
-  `IllegalStateException("No INavActionFactory registered for ...")` at dispatch time: a runtime
-  crash when the user taps, not a compile error. Two factories for the same class: the last one wins silently.
+- **Exact-class lookup.** Handlers and log decorators are matched by `action::class`. A handler for a
+  sealed parent or a superclass never matches its subclasses. A missing handler throws
+  `IllegalStateException("No INavActionHandler registered for ...")` at dispatch time: a runtime
+  crash when the user taps, not a compile error. Two handlers for the same class: the last one wins silently.
 - **Dispatcher snapshot.** `uiModule()` registers the dispatcher as a `single` that calls
-  `getAll<INavActionFactory<*>>()` on first resolution. Factories in modules loaded later with
+  `getAll<INavActionHandler<*>>()` on first resolution. Handlers in modules loaded later with
   `loadKoinModules` are never seen; load every navigation module in `startKoin`. It also means each
-  factory instance lives for the whole process.
+  handler instance lives for the whole process, so it must not keep per-navigation state.
 - **Deep links are mandatory and scheme-less.** Navigation always goes through `navigate(deepLink)`.
   The default `deepLinks` (the route pattern) covers it; if you override `deepLinks`, keep the pattern
   you navigate with. `Navigation` prefixes every `uriPattern` with `"${deepLinkScheme}://"`, so an

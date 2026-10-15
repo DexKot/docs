@@ -231,7 +231,7 @@ val notesNavModule = module {
 
 There is no `withLogging()` for nav actions. Pass `getAll<INavActionLogDecorator>()` to core-ui's
 `Navigation(decorators = ...)`; its dispatcher looks decorators up by `action::class` and logs a
-`navigate` event before executing. See **dexkot-navigation**.
+`navigate` event before calling the action's handler. See **dexkot-navigation**.
 
 ## Step 4: UI interactions
 

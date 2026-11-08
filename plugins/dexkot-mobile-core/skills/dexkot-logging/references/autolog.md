@@ -1,4 +1,4 @@
-# AutoLog reference: annotations, KSP setup, generated code (0.28.0)
+# AutoLog reference: annotations, KSP setup, generated code (0.28.1)
 
 Contents
 1. Annotations
@@ -7,6 +7,7 @@ Contents
 4. @AutoLogViewModel + @AutoLogIntention: requirements, generated code, Koin
 5. @AutoLogNavAction: requirements, generated code, Koin
 6. Validation matrix (what fails, what is silent)
+7. Generated visibility
 
 ## 1. Annotations
 
@@ -211,8 +212,11 @@ internal class NotesViewModel_LogDecorator<Model>(
     }
 }
 
-fun <Model> AndroidViewModel<Model, NotesIntention>.withLogging(logger: ILogger, sourceComponent: String): AndroidViewModel<Model, NotesIntention>
+public fun <Model> AndroidViewModel<Model, NotesIntention>.withLogging(logger: ILogger, sourceComponent: String): AndroidViewModel<Model, NotesIntention>
 ```
+
+`withLogging` mirrors the Intention's visibility: `internal` when the Intention (or a declaration that
+contains it) is `internal`, `public` otherwise. See section 7.
 
 Why the two `init` calls:
 - `clearTogetherWith(delegate)`: the `ViewModelStore` only knows the decorator. Without this, clearing
@@ -249,10 +253,11 @@ Requirements:
 - Make the action a top-level class. The decorator refers to it by simple name, so a nested class
   (`Outer.OpenNote`) does not resolve.
 
-Generated `OpenNoteNavAction_LogDecorator.kt` (public class, no `withLogging`):
+Generated `OpenNoteNavAction_LogDecorator.kt` (no `withLogging`; the class mirrors the NavAction's
+visibility, see section 7):
 
 ```kotlin
-class OpenNoteNavAction_LogDecorator : INavActionLogDecorator {
+public class OpenNoteNavAction_LogDecorator : INavActionLogDecorator {
     override val actionType: KClass<out INavAction> = OpenNoteNavAction::class
     override fun log(action: INavAction, logger: ILoggerInteractor) {
         val typedAction = action as OpenNoteNavAction
@@ -295,6 +300,32 @@ Each screen wraps the dispatcher with `dispatcher.withLogging(LocalLogger.curren
 | Intention in another package, or subclasses not nested | generated code fails to compile |
 | Nested (non top-level) nav action class | generated code fails to compile |
 | Blank nav action `identifier` | KSP error |
+| `private` / `protected` / local Intention or nav action (or inside such a declaration) | KSP error, nothing generated |
 | Forgot `.withLogging()` / decorator binding | compiles, logs nothing |
 | core-ui older than core-ksp-processor 0.27.0 | `clearTogetherWith` unresolved in generated code |
 | core-ui older than core-ksp-processor 0.28.0 | nav `_LogDecorator` overrides nothing (`log` not in `INavActionLogDecorator`) |
+| core-ksp-processor older than 0.28.1 with an `internal` Intention | generated `withLogging` is public: "exposes its internal parameter type" |
+
+## 7. Generated visibility
+
+Generated top-level declarations always carry an explicit modifier (`public` or `internal`), so a
+module with Kotlin `explicitApi()` strict mode compiles them.
+
+| Generated declaration | Visibility |
+|---|---|
+| Use case `_AutoLogDecorator` class and `withLogging()` | always `internal` |
+| ViewModel `_LogDecorator` class | always `internal` |
+| ViewModel `withLogging()` | effective visibility of the Intention type |
+| Nav action `_LogDecorator` class | effective visibility of the nav action |
+
+Effective visibility walks the type and every declaration that contains it:
+- `internal` if the type or any container is `internal`.
+- `public` if all of them are public.
+- `private`, `protected` or local anywhere in the chain: KSP error naming the type, and no file is
+  generated. Generated top-level code cannot reference such a type.
+
+A ViewModel without an Intention (`Nothing`/`Unit`) gets a `public` `withLogging()`.
+
+So, to keep a screen's types module-private, mark the Intention `internal`; then the Model, the
+ViewModel and the route that references them must also be `internal` (normal Kotlin exposure rules).
+An `internal` nav action gets an `internal` decorator, so bind it from the same module.

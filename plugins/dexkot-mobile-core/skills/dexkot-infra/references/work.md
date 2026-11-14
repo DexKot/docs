@@ -1,4 +1,4 @@
-# core-work reference (0.28.0)
+# core-work reference (0.28.2)
 
 Contents
 1. Model: providers, factories, backends

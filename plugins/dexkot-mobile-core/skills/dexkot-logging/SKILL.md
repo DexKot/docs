@@ -15,7 +15,7 @@ logger has to be threaded through constructors.
 Everything funnels into a single `ILogger`, which is usually a composition of several backends
 (console + Firebase + PostHog) wrapped in `PersistentUserIdLogger`.
 
-Version covered: **0.28.0**. Detailed API: `references/logger-api.md`. AutoLog details and generated
+Version covered: **0.28.2**. Detailed API: `references/logger-api.md`. AutoLog details and generated
 code: `references/autolog.md`.
 
 ## Setup
@@ -32,10 +32,10 @@ dependencyResolutionManagement {
 
 // build.gradle.kts of the module that composes the logger (usually the app / shared DI module)
 dependencies {
-    implementation("dev.dexkot.mobile:core-logger:0.28.0")
-    implementation("dev.dexkot.mobile:core-logger-firebase:0.28.0")   // optional backend
-    implementation("dev.dexkot.mobile:core-logger-posthog:0.28.0")    // optional backend
-    implementation("dev.dexkot.mobile:core-logger-di-koin:0.28.0")    // loggerModule()
+    implementation("dev.dexkot.mobile:core-logger:0.28.2")
+    implementation("dev.dexkot.mobile:core-logger-firebase:0.28.2")   // optional backend
+    implementation("dev.dexkot.mobile:core-logger-posthog:0.28.2")    // optional backend
+    implementation("dev.dexkot.mobile:core-logger-di-koin:0.28.2")    // loggerModule()
 }
 ```
 
@@ -153,8 +153,8 @@ Add KSP to every module that declares annotated types:
 // Android module
 plugins { id("com.google.devtools.ksp") }
 dependencies {
-    implementation("dev.dexkot.mobile:core-annotation:0.28.0")
-    ksp("dev.dexkot.mobile:core-ksp-processor:0.28.0")
+    implementation("dev.dexkot.mobile:core-annotation:0.28.2")
+    ksp("dev.dexkot.mobile:core-ksp-processor:0.28.2")
 }
 ```
 
@@ -290,6 +290,10 @@ See **dexkot-screen** for the screen structure.
     diagnostics or screen calls. See `references/logger-api.md` for the full routing table.
 12. **Custom `LogEvent` implementations only reach Firebase.** `ConsoleLogger` and `PostHogLogger` switch
     over the built-in event classes and drop anything else.
+13. **Use core-ksp-processor 0.28.2 or later.** Older versions silently generate nothing for a class with
+    any type KSP cannot resolve (even in a private member), so compilation fails later on
+    `_LogDecorator` / `withLogging`. Since 0.28.2 only the class header is checked, and an unresolvable
+    header type is a KSP error `@AutoLog… was not processed` that names the type.
 
 ## Related skills
 

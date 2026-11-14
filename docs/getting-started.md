@@ -29,7 +29,7 @@ plugins {
 }
 
 dependencies {
-    val dexkot = "0.28.0"
+    val dexkot = "0.28.2"
     implementation("dev.dexkot.mobile:core-foundation:$dexkot")
     implementation("dev.dexkot.mobile:core-ui:$dexkot")
     implementation("dev.dexkot.mobile:core-ui-di-koin:$dexkot")

@@ -8,7 +8,7 @@ interface or class, KSP writes a decorator, and Koin hands out the decorated ins
 a use case. Code that really does need to log by hand (say, a caught exception in a data source) gets the
 logger from the coroutine context, so you never add a logger parameter to a constructor just for that.
 
-Version: **0.28.0**.
+Version: **0.28.2**.
 
 - [Modules](#modules)
 - [1. Compose your logger](#1-compose-your-logger)
@@ -49,10 +49,10 @@ dependencyResolutionManagement {
 
 // build.gradle.kts (app / composition module)
 dependencies {
-    implementation("dev.dexkot.mobile:core-logger:0.28.0")
-    implementation("dev.dexkot.mobile:core-logger-firebase:0.28.0")
-    implementation("dev.dexkot.mobile:core-logger-posthog:0.28.0")
-    implementation("dev.dexkot.mobile:core-logger-di-koin:0.28.0")
+    implementation("dev.dexkot.mobile:core-logger:0.28.2")
+    implementation("dev.dexkot.mobile:core-logger-firebase:0.28.2")
+    implementation("dev.dexkot.mobile:core-logger-posthog:0.28.2")
+    implementation("dev.dexkot.mobile:core-logger-di-koin:0.28.2")
 }
 ```
 
@@ -164,10 +164,10 @@ plugins {
 }
 
 dependencies {
-    implementation("dev.dexkot.mobile:core-annotation:0.28.0")
-    implementation("dev.dexkot.mobile:core-logger:0.28.0")
-    implementation("dev.dexkot.mobile:core-ui:0.28.0")         // for ViewModels / nav actions
-    ksp("dev.dexkot.mobile:core-ksp-processor:0.28.0")
+    implementation("dev.dexkot.mobile:core-annotation:0.28.2")
+    implementation("dev.dexkot.mobile:core-logger:0.28.2")
+    implementation("dev.dexkot.mobile:core-ui:0.28.2")         // for ViewModels / nav actions
+    ksp("dev.dexkot.mobile:core-ksp-processor:0.28.2")
 }
 ```
 
@@ -179,16 +179,16 @@ kotlin {
         commonMain {
             kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
             dependencies {
-                implementation("dev.dexkot.mobile:core-annotation:0.28.0")
-                implementation("dev.dexkot.mobile:core-logger:0.28.0")
-                implementation("dev.dexkot.mobile:core-foundation:0.28.0")
+                implementation("dev.dexkot.mobile:core-annotation:0.28.2")
+                implementation("dev.dexkot.mobile:core-logger:0.28.2")
+                implementation("dev.dexkot.mobile:core-foundation:0.28.2")
             }
         }
     }
 }
 
 dependencies {
-    add("kspCommonMainMetadata", "dev.dexkot.mobile:core-ksp-processor:0.28.0")
+    add("kspCommonMainMetadata", "dev.dexkot.mobile:core-ksp-processor:0.28.2")
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().configureEach {
@@ -327,6 +327,12 @@ values, and 25 parameters per event, so keep ids short.
   on Android.
 - **Firebase drops developer messages.** Use console or PostHog to see them.
 - **Missing `.withLogging()` / decorator binding** compiles fine and logs nothing.
+- **Use core-ksp-processor 0.28.2 or later.** Before 0.28.2, a type KSP could not resolve anywhere in an
+  annotated class made the ksp task succeed with no files, and compilation failed later on
+  `_LogDecorator` / `withLogging`. Since 0.28.2 only the class header (supertypes and their type
+  arguments, a use case's `invoke` signature) must resolve, and if it doesn't you get a KSP error
+  `@AutoLog… was not processed` naming the type. After upgrading from an affected build, delete
+  `build/kspCaches` and `build/generated/ksp` once.
 - **Params are strings.** Every `LogParam` goes through `toString()`.
 - **Don't log personal data.** Params end up in third-party analytics.
 - **Tests:** `FirebaseLogger()` and `PostHogLogger()` touch native SDKs. Use a fake `ILogger`, and call

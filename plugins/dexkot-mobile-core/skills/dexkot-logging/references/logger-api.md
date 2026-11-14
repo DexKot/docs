@@ -1,4 +1,4 @@
-# core-logger API reference (0.28.0)
+# core-logger API reference (0.28.2)
 
 Contents
 1. ILogger and helpers

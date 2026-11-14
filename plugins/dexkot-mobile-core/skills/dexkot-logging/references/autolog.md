@@ -1,4 +1,4 @@
-# AutoLog reference: annotations, KSP setup, generated code (0.28.1)
+# AutoLog reference: annotations, KSP setup, generated code (0.28.2)
 
 Contents
 1. Annotations
@@ -53,10 +53,10 @@ plugins {
 }
 
 dependencies {
-    implementation("dev.dexkot.mobile:core-annotation:0.28.0")
-    implementation("dev.dexkot.mobile:core-logger:0.28.0")
-    implementation("dev.dexkot.mobile:core-ui:0.28.0")        // if the module has ViewModels / nav actions
-    ksp("dev.dexkot.mobile:core-ksp-processor:0.28.0")
+    implementation("dev.dexkot.mobile:core-annotation:0.28.2")
+    implementation("dev.dexkot.mobile:core-logger:0.28.2")
+    implementation("dev.dexkot.mobile:core-ui:0.28.2")        // if the module has ViewModels / nav actions
+    ksp("dev.dexkot.mobile:core-ksp-processor:0.28.2")
 }
 ```
 
@@ -75,16 +75,16 @@ kotlin {
         commonMain {
             kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
             dependencies {
-                implementation("dev.dexkot.mobile:core-annotation:0.28.0")
-                implementation("dev.dexkot.mobile:core-logger:0.28.0")
-                implementation("dev.dexkot.mobile:core-foundation:0.28.0")
+                implementation("dev.dexkot.mobile:core-annotation:0.28.2")
+                implementation("dev.dexkot.mobile:core-logger:0.28.2")
+                implementation("dev.dexkot.mobile:core-foundation:0.28.2")
             }
         }
     }
 }
 
 dependencies {
-    add("kspCommonMainMetadata", "dev.dexkot.mobile:core-ksp-processor:0.28.0")
+    add("kspCommonMainMetadata", "dev.dexkot.mobile:core-ksp-processor:0.28.2")
 }
 
 // Every compilation must see the generated sources.
@@ -305,6 +305,8 @@ Each screen wraps the dispatcher with `dispatcher.withLogging(LocalLogger.curren
 | core-ui older than core-ksp-processor 0.27.0 | `clearTogetherWith` unresolved in generated code |
 | core-ui older than core-ksp-processor 0.28.0 | nav `_LogDecorator` overrides nothing (`log` not in `INavActionLogDecorator`) |
 | core-ksp-processor older than 0.28.1 with an `internal` Intention | generated `withLogging` is public: "exposes its internal parameter type" |
+| core-ksp-processor older than 0.28.2 and a type KSP cannot resolve anywhere in the annotated class | ksp task succeeds with **no files**; compilation then fails on unresolved `_LogDecorator` / `withLogging`. Re-runs can stay broken until `build/kspCaches` and `build/generated/ksp` are deleted |
+| Since 0.28.2: a type KSP cannot resolve in the class header (supertypes, their type arguments, a use case `invoke` signature) | KSP error `@AutoLog… on '<class>' was not processed …` naming the unresolved type. Types used only in members no longer matter |
 
 ## 7. Generated visibility
 

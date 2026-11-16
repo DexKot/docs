@@ -15,7 +15,7 @@ logger has to be threaded through constructors.
 Everything funnels into a single `ILogger`, which is usually a composition of several backends
 (console + Firebase + PostHog) wrapped in `PersistentUserIdLogger`.
 
-Version covered: **0.28.2**. Detailed API: `references/logger-api.md`. AutoLog details and generated
+Version covered: **0.29.0**. Detailed API: `references/logger-api.md`. AutoLog details and generated
 code: `references/autolog.md`.
 
 ## Setup
@@ -32,10 +32,10 @@ dependencyResolutionManagement {
 
 // build.gradle.kts of the module that composes the logger (usually the app / shared DI module)
 dependencies {
-    implementation("dev.dexkot.mobile:core-logger:0.28.2")
-    implementation("dev.dexkot.mobile:core-logger-firebase:0.28.2")   // optional backend
-    implementation("dev.dexkot.mobile:core-logger-posthog:0.28.2")    // optional backend
-    implementation("dev.dexkot.mobile:core-logger-di-koin:0.28.2")    // loggerModule()
+    implementation("dev.dexkot.mobile:core-logger:0.29.0")
+    implementation("dev.dexkot.mobile:core-logger-firebase:0.29.0")   // optional backend
+    implementation("dev.dexkot.mobile:core-logger-posthog:0.29.0")    // optional backend
+    implementation("dev.dexkot.mobile:core-logger-di-koin:0.29.0")    // loggerModule()
 }
 ```
 
@@ -153,8 +153,8 @@ Add KSP to every module that declares annotated types:
 // Android module
 plugins { id("com.google.devtools.ksp") }
 dependencies {
-    implementation("dev.dexkot.mobile:core-annotation:0.28.2")
-    ksp("dev.dexkot.mobile:core-ksp-processor:0.28.2")
+    implementation("dev.dexkot.mobile:core-annotation:0.29.0")
+    ksp("dev.dexkot.mobile:core-ksp-processor:0.29.0")
 }
 ```
 

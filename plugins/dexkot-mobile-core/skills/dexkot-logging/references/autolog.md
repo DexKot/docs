@@ -1,4 +1,4 @@
-# AutoLog reference: annotations, KSP setup, generated code (0.28.2)
+# AutoLog reference: annotations, KSP setup, generated code (0.29.0)
 
 Contents
 1. Annotations
@@ -53,10 +53,10 @@ plugins {
 }
 
 dependencies {
-    implementation("dev.dexkot.mobile:core-annotation:0.28.2")
-    implementation("dev.dexkot.mobile:core-logger:0.28.2")
-    implementation("dev.dexkot.mobile:core-ui:0.28.2")        // if the module has ViewModels / nav actions
-    ksp("dev.dexkot.mobile:core-ksp-processor:0.28.2")
+    implementation("dev.dexkot.mobile:core-annotation:0.29.0")
+    implementation("dev.dexkot.mobile:core-logger:0.29.0")
+    implementation("dev.dexkot.mobile:core-ui:0.29.0")        // if the module has ViewModels / nav actions
+    ksp("dev.dexkot.mobile:core-ksp-processor:0.29.0")
 }
 ```
 
@@ -75,16 +75,16 @@ kotlin {
         commonMain {
             kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
             dependencies {
-                implementation("dev.dexkot.mobile:core-annotation:0.28.2")
-                implementation("dev.dexkot.mobile:core-logger:0.28.2")
-                implementation("dev.dexkot.mobile:core-foundation:0.28.2")
+                implementation("dev.dexkot.mobile:core-annotation:0.29.0")
+                implementation("dev.dexkot.mobile:core-logger:0.29.0")
+                implementation("dev.dexkot.mobile:core-foundation:0.29.0")
             }
         }
     }
 }
 
 dependencies {
-    add("kspCommonMainMetadata", "dev.dexkot.mobile:core-ksp-processor:0.28.2")
+    add("kspCommonMainMetadata", "dev.dexkot.mobile:core-ksp-processor:0.29.0")
 }
 
 // Every compilation must see the generated sources.

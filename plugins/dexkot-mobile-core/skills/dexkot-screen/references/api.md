@@ -1,6 +1,6 @@
-# core-ui Compose API reference (0.28.2)
+# core-ui Compose API reference (0.29.0)
 
-Artifact: `dev.dexkot.mobile:core-ui:0.28.2` (Android AAR). All packages below are under
+Artifact: `dev.dexkot.mobile:core-ui:0.29.0` (Android AAR). All packages below are under
 `dev.dexkot.mobile.core.ui`.
 
 ## Contents

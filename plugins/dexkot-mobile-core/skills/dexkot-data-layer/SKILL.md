@@ -30,14 +30,14 @@ multiplatform `Settings.Factory` for key-value stores (`core-preferences`).
 // settings.gradle.kts: add maven("https://dexkot.github.io/maven") to repositories
 
 // Domain/data modules (commonMain.dependencies in KMP)
-implementation("dev.dexkot.mobile:core-foundation:0.28.2")
-implementation("dev.dexkot.mobile:core-database:0.28.2")         // ITransactionFactory, ITransaction
+implementation("dev.dexkot.mobile:core-foundation:0.29.0")
+implementation("dev.dexkot.mobile:core-database:0.29.0")         // ITransactionFactory, ITransaction
 
 // Only the module that builds the SQLDelight database
-implementation("dev.dexkot.mobile:core-database-sqldelight:0.28.2") // TransactionFactory
+implementation("dev.dexkot.mobile:core-database-sqldelight:0.29.0") // TransactionFactory
 
 // Key-value stores
-implementation("dev.dexkot.mobile:core-preferences:0.28.2")       // settingsFactoryModule (Koin)
+implementation("dev.dexkot.mobile:core-preferences:0.29.0")       // settingsFactoryModule (Koin)
 ```
 
 All four are Kotlin Multiplatform. Android: published. iOS: build from source (`publishToMavenLocal`).

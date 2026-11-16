@@ -8,7 +8,7 @@ background work, remote config and runtime permissions.
 This repository holds the **public documentation** and the **Claude Code skills** for the libraries.
 The artifacts are published to a public Maven repository.
 
-**Current version: `0.28.2`**
+**Current version: `0.29.0`**
 
 ## Install
 
@@ -24,13 +24,13 @@ dependencyResolutionManagement {
 
 // build.gradle.kts
 dependencies {
-    implementation("dev.dexkot.mobile:core-foundation:0.28.2")
-    implementation("dev.dexkot.mobile:core-ui:0.28.2")
+    implementation("dev.dexkot.mobile:core-foundation:0.29.0")
+    implementation("dev.dexkot.mobile:core-ui:0.29.0")
     // ...the modules you need, see below
 }
 ```
 
-Toolchain: Kotlin 2.3.10, KSP 2.3.10, JDK 21, Android `minSdk` 28 / `compileSdk` 36, Koin 4.1.1.
+Toolchain: Kotlin 2.3.10, KSP 2.3.10, JDK 21, Android `minSdk` 26 / `compileSdk` 36, Koin 4.1.1.
 
 Kotlin Multiplatform modules publish Android artifacts to the Maven repository. iOS artifacts are not
 published yet; build them from source with `publishToMavenLocal`.

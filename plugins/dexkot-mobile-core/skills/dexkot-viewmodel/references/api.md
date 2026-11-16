@@ -1,6 +1,6 @@
-# core-ui viewmodel API reference (0.28.2)
+# core-ui viewmodel API reference (0.29.0)
 
-Artifact: `dev.dexkot.mobile:core-ui:0.28.2` (Android AAR).
+Artifact: `dev.dexkot.mobile:core-ui:0.29.0` (Android AAR).
 
 ## Contents
 
